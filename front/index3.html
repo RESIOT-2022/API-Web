@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chenillard Project</title>
+    <link rel="stylesheet" href="style3.css">
+</head>
+
+<body>
+    <div id="ProgressBar2"></div>
+    <div class="center_div">
+        <p style="margin-top: 10px;">Click on to change states !</p>
+
+        <table>
+            <tr>
+                <td><img class="led" src="images/led_icon_blue.png"></td>
+                <td><img class="led" src="images/led_icon_blue.png"></td>
+                <td><img class="led" src="images/led_icon_blue.png"></td>
+                <td><img class="led" src="images/led_icon_blue.png"></td>
+                <td><img class="led" src="images/led_icon_blue.png"></td>
+            </tr>
+        </table>
+
+        <input type="range" min="0" max ="100" value="50" id="slider">
+
+        <div id="SelectBtn"></div>
+        <div id="SelectValue"></div>
+
+        <p>Slide to change speed !</p>
+        <div id="PowerOff"></div>
+        <table id="tab_motif">
+            <tr>
+                <td class="motif">Motif 1</td>
+                <td class="motif">Motif 2</td>
+                <td class="motif">Motif 3</td>
+                <td class="motif">Motif 4</td>
+            </tr>
+        </table>
+        <div id="nb">oui</div>
+    </div>
+
+    <script>
+
+        window.onload = function () {
+            installEventsOnMyFuckingTable();
+            console.log(slider.value);
+        }
+
+        var slider = document.getElementById("slider");
+        var SelectBtn = document.getElementById("SelectBtn");
+        var SelectValue = document.getElementById("SelectValue");
+        var PowerOff = document.getElementById("PowerOff");
+        var ProgressBar2 = document.getElementById("ProgressBar2");
+
+        var nb = document.getElementById("nb");
+        nb.onclick = function(){
+            alert(this.content);
+        }
+        PowerOff.onclick = function(){
+            alert(this.content);
+        }
+        
+
+        SelectValue.innerHTML = slider.value;
+        ProgressBar2.style.width = slider.value + "%";
+
+        slider.oninput = function(){
+            slider.style.left = this.value + "%";
+            SelectValue.innerHTML = slider.value;
+            ProgressBar2.style.width = this.value + "%";
+        }
+
+        function changeLED(){
+            var img1 = document.getElementById("img1");
+            
+            var table = document.getElementsByTagName('table')[0]; // ou getElementById()
+            var tbody = table.getElementsByTagName('tbody')[0];
+            var _td = tbody.getElementsByTagName('td');
+            for (var i=0 ; i<_td.length ; i++) {
+                _td[i].onclick = function () {
+                    _td[i]
+                }
+            }
+        }
+
+        function installEventsOnMyFuckingTable () {
+            var table = document.getElementsByTagName('table')[0]; // ou getElementById()
+            var table2 = document.getElementsByTagName('table')[1];
+            var tbody = table.getElementsByTagName('tbody')[0];
+            var tbody2 = table2.getElementsByTagName('tbody')[0];
+            var _td = tbody.getElementsByTagName('td');
+            var _td2 = tbody2.getElementsByTagName('td');
+            for (var i=0 ; i<_td.length ; i++) {
+                _td[i].onclick = function () {
+                alert(this.textContent);
+                }
+            }
+            for (var i=0 ; i<_td2.length ; i++) {
+                _td2[i].onclick = function () {
+                alert(this.textContent);
+                }
+            }
+        }
+    </script>
+    
+</body>
+</html>
