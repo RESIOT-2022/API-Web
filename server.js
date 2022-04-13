@@ -43,9 +43,14 @@ app.get('/images/led-orange', (req, res) => {
     res.sendFile(`${__dirname}/front/images/led_icon_orange.png`)
 })
 
-app.get('/images/led-orange', (req, res) => {
+app.get('/images/btn-icon', (req, res) => {
     res.set('Content-Type', 'image/png')
-    res.sendFile(`${__dirname}/front/images/led_icon_orange.png`)
+    res.sendFile(`${__dirname}/front/images/button_icon.png`)
+})
+
+app.get('/images/poweroff', (req, res) => {
+    res.set('Content-Type', 'image/jpg')
+    res.sendFile(`${__dirname}/front/images/poweroff.jpg`)
 })
 //route vers l'image puis dans le code de la page dire où aller chercher l'image
 
