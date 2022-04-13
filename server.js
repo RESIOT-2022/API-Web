@@ -33,12 +33,21 @@ app.get('/', (req, res) => {
     res.sendFile(`${__dirname}/front/index3.html`)
 })
 
-// app.get('/images/:id', (req, res) => {
-//     db.find({_id: req.params.id}, (err, docs) => {
-//         if(err) console.log(err)
-//         res.send(docs)
-//     })
-// })
+app.get('/images/led-blue', (req, res) => {
+    res.set('Content-Type', 'image/png')
+    res.sendFile(`${__dirname}/front/images/led_icon_blue.png`)
+})
+
+app.get('/images/led-orange', (req, res) => {
+    res.set('Content-Type', 'image/png')
+    res.sendFile(`${__dirname}/front/images/led_icon_orange.png`)
+})
+
+app.get('/images/led-orange', (req, res) => {
+    res.set('Content-Type', 'image/png')
+    res.sendFile(`${__dirname}/front/images/led_icon_orange.png`)
+})
+//route vers l'image puis dans le code de la page dire où aller chercher l'image
 
 // //API CRUD
 
