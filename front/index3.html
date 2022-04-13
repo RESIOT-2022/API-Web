@@ -34,11 +34,11 @@
 
         <table>
             <tr>
-                <td><img class="led" src="https://raw.githubusercontent.com/RESIOT-2022/API-Web/main/front/images/led_icon_blue.png?token=GHSAT0AAAAAABRZRT5CH664WSG2GGE4RZ66YSWNGRQ"></td>
-                <td><img class="led" src="https://raw.githubusercontent.com/RESIOT-2022/API-Web/main/front/images/led_icon_blue.png?token=GHSAT0AAAAAABRZRT5CH664WSG2GGE4RZ66YSWNGRQ"></td>
-                <td><img class="led" src="https://raw.githubusercontent.com/RESIOT-2022/API-Web/main/front/images/led_icon_blue.png?token=GHSAT0AAAAAABRZRT5CH664WSG2GGE4RZ66YSWNGRQ"></td>
-                <td><img class="led" src="https://raw.githubusercontent.com/RESIOT-2022/API-Web/main/front/images/led_icon_blue.png?token=GHSAT0AAAAAABRZRT5CH664WSG2GGE4RZ66YSWNGRQ"></td>
-                <td><img class="led" src="https://raw.githubusercontent.com/RESIOT-2022/API-Web/main/front/images/led_icon_blue.png?token=GHSAT0AAAAAABRZRT5CH664WSG2GGE4RZ66YSWNGRQ"></td>
+                <td><img id="led1" class="led" src="images/led-blue"></td>
+                <td><img id="led2" class="led" src="images/led-blue"></td>
+                <td><img id="led3" class="led" src="images/led-blue"></td>
+                <td><img id="led4" class="led" src="images/led-blue"></td>
+                <td><img id="led5" class="led" src="images/led-blue"></td>
             </tr>
         </table>
 
@@ -88,9 +88,9 @@
             ProgressBar2.style.width = this.value + "%";
         }
 
+        var led1 = document.getElementById("led1");
         function changeLED(){
-            var img1 = document.getElementById("img1");
-            
+            led1.src = 'images/change'
             var table = document.getElementsByTagName('table')[0]; // ou getElementById()
             var tbody = table.getElementsByTagName('tbody')[0];
             var _td = tbody.getElementsByTagName('td');
@@ -100,6 +100,8 @@
                 }
             }
         }
+        
+        // led1.addEventListener('click', changeLED())
 
         function installEventsOnMyFuckingTable () {
             var table = document.getElementsByTagName('table')[0]; // ou getElementById()
@@ -110,7 +112,7 @@
             var _td2 = tbody2.getElementsByTagName('td');
             for (var i=0 ; i<_td.length ; i++) {
                 _td[i].onclick = function () {
-                alert(this.textContent);
+                    document.getElementById("led1").src = "images/led-orange"
                 }
             }
             for (var i=0 ; i<_td2.length ; i++) {
@@ -151,31 +153,7 @@
             width: 75%;
             cursor: pointer;
         }
-        /*
-        #slider{
-            margin-top: 30px;
-            width: 60%;
-            height: 9px;
-            background: transparent;
-            border-color: transparent;
-            border-width: 6px;
-            color: transparent;
-        }
-        #slider::-ms-fill-lower{
-            background: rgb(178, 26, 26);
-            border-radius: 10px;
-        }
-        #slider::-ms-fill-upper{
-            background: #ddd;
-            border-radius: 10px;
-        }
-        #slider::-ms-thumb{
-            border: none;
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: goldenrod;
-        }*/
+        
         input[type=range]{
             -webkit-appearance: none;
             margin-top: 30px;
@@ -189,7 +167,7 @@
 
         input[type=range]::-webkit-slider-thumb{
             -webkit-appearance: none;
-            background: #c5c881 url(./images/button_icon.png);
+            background: #c5c881 url(images/btn-icon);
             border: none;
             height: 20px;
             width: 20px;
@@ -211,7 +189,7 @@
         }
 
         #SelectBtn{
-            background-image: url(./images/button_icon.png);
+            background-image: url(images/btn-icon);
             height: 20px;
             width: 20px;
             background-size: cover;
@@ -249,7 +227,7 @@
         #PowerOff{
             height: 30px;
             width: 30px;
-            background-image: url(./images/poweroff.jpg);
+            background-image: url(images/poweroff);
             background-size: cover;
             background-position: center;
             border-radius: 50%;

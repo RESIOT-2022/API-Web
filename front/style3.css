@@ -24,8 +24,18 @@ td{
     text-align: center;
 }
 
+.LEDs{
+    display: grid;
+    width: 100%;
+    grid-template-columns: 15% 15% 15% 15% 15%;
+    align-items: start;
+    align-self: center;
+    justify-content: space-between;
+    margin: 0 auto;
+}
+
 .led{
-    width: 75%;
+    width: 100%;
     cursor: pointer;
 }
 /*
