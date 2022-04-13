@@ -5,7 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chenillard Project</title>
-    <link rel="stylesheet" href="style3.css">
+    <link rel="stylesheet" ></link>
+    
+    <script>
+        //Create WebSocket connection
+        const socket = new WebSocket('ws://localhost:8080')
+            
+            //Connection opened
+            socket.addEventListener('open', (event) => {
+                socket.send('hello server!!')
+            })
+            
+            //Listen for messages
+            socket.addEventListener('message', (event) => {
+                console.log('Message from server : ' + event.data)
+            })
+            
+            const sendMessage = () => {
+                socket.send('Hello from client')
+            }
+    </script>
 </head>
 
 <body>
@@ -15,11 +34,11 @@
 
         <table>
             <tr>
-                <td><img class="led" src="images/led_icon_blue.png"></td>
-                <td><img class="led" src="images/led_icon_blue.png"></td>
-                <td><img class="led" src="images/led_icon_blue.png"></td>
-                <td><img class="led" src="images/led_icon_blue.png"></td>
-                <td><img class="led" src="images/led_icon_blue.png"></td>
+                <td><img class="led" src="https://raw.githubusercontent.com/RESIOT-2022/API-Web/main/front/images/led_icon_blue.png?token=GHSAT0AAAAAABRZRT5CH664WSG2GGE4RZ66YSWNGRQ"></td>
+                <td><img class="led" src="https://raw.githubusercontent.com/RESIOT-2022/API-Web/main/front/images/led_icon_blue.png?token=GHSAT0AAAAAABRZRT5CH664WSG2GGE4RZ66YSWNGRQ"></td>
+                <td><img class="led" src="https://raw.githubusercontent.com/RESIOT-2022/API-Web/main/front/images/led_icon_blue.png?token=GHSAT0AAAAAABRZRT5CH664WSG2GGE4RZ66YSWNGRQ"></td>
+                <td><img class="led" src="https://raw.githubusercontent.com/RESIOT-2022/API-Web/main/front/images/led_icon_blue.png?token=GHSAT0AAAAAABRZRT5CH664WSG2GGE4RZ66YSWNGRQ"></td>
+                <td><img class="led" src="https://raw.githubusercontent.com/RESIOT-2022/API-Web/main/front/images/led_icon_blue.png?token=GHSAT0AAAAAABRZRT5CH664WSG2GGE4RZ66YSWNGRQ"></td>
             </tr>
         </table>
 
@@ -38,11 +57,8 @@
                 <td class="motif">Motif 4</td>
             </tr>
         </table>
-        <div id="nb">oui</div>
-    </div>
-
+    </div>   
     <script>
-
         window.onload = function () {
             installEventsOnMyFuckingTable();
             console.log(slider.value);
@@ -103,7 +119,173 @@
                 }
             }
         }
-    </script>
-    
+    </script> 
+    <style>
+        body{
+            background-color: #202020;
+            color: #fff;
+            font-family: system-ui;
+            position: relative;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .center-div{
+            margin : 0 auto;
+            width: max-content;
+            text-align: center;
+            position: relative;
+        }
+
+        table{
+            table-layout: fixed;
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+
+        td{
+            text-align: center;
+        }
+
+        .led{
+            width: 75%;
+            cursor: pointer;
+        }
+        /*
+        #slider{
+            margin-top: 30px;
+            width: 60%;
+            height: 9px;
+            background: transparent;
+            border-color: transparent;
+            border-width: 6px;
+            color: transparent;
+        }
+        #slider::-ms-fill-lower{
+            background: rgb(178, 26, 26);
+            border-radius: 10px;
+        }
+        #slider::-ms-fill-upper{
+            background: #ddd;
+            border-radius: 10px;
+        }
+        #slider::-ms-thumb{
+            border: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: goldenrod;
+        }*/
+        input[type=range]{
+            -webkit-appearance: none;
+            margin-top: 30px;
+            width: 45%;
+            height: 9px;
+            background-color: #ddd;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type=range]::-webkit-slider-thumb{
+            -webkit-appearance: none;
+            background: #c5c881 url(./images/button_icon.png);
+            border: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            border: #fff;
+        }
+        input[type=range]::-ms-track{
+            width: 60%;
+            cursor: pointer;
+        }
+        input[type=range]:focus{
+            outline: none;
+        }
+        input[type=range]:focus::-webkit-slider-runnable-track{
+            background: none;
+        }
+        input[type=range]::-ms-fill-lower{
+            background: rgb(178, 26, 26);
+        }
+
+        #SelectBtn{
+            background-image: url(./images/button_icon.png);
+            height: 20px;
+            width: 20px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            bottom: 20px;
+            margin-left: 7.3px;
+        }
+
+        #SelectValue{
+            width: 33px;
+            height: 28px;
+            position: relative;
+            top: 0;
+            background: #ffd200;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 30px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #SelectValue::after{
+            content: '';
+            border-bottom: 17px solid #ffd200;
+            border-left: 17px solid #202020;
+            border-right: 16px solid #202020;
+            position: absolute;
+            top: -13px;
+            left:0;
+        }
+
+        #PowerOff{
+            height: 30px;
+            width: 30px;
+            background-image: url(./images/poweroff.jpg);
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            margin: 0 auto;
+            z-index: 2;
+        }
+
+        #tab_motif{
+            width: 50%;
+            border-collapse: separate;
+            border-spacing: 60px;
+            position: relative;
+            margin-top: -40px;
+        }
+
+        .motif{
+            height: 100px;
+            width: 80px;
+            cursor: pointer;
+            background-color: rgb(40, 40, 103);
+            border-radius: 20%;
+            color: #ecfd29;
+            letter-spacing: 1px;
+        }
+
+        #ProgressBar2{
+            width: 100%;
+            height: 9px;
+            background-color: rgb(40, 40, 103);
+            top: 0;
+            left: 0;
+            border-radius: 5px;
+            position: sticky;
+        }
+    </style>
 </body>
 </html>

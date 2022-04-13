@@ -30,12 +30,19 @@ wss.on('connection', (ws) => {
 //Read html
 app.get('/', (req, res) => {
     res.set('Content-Type', 'text/html')
-    res.sendFile(`${__dirname}/pages/home.html`)
+    res.sendFile(`${__dirname}/front/index3.html`)
 })
+
+// app.get('/images/:id', (req, res) => {
+//     db.find({_id: req.params.id}, (err, docs) => {
+//         if(err) console.log(err)
+//         res.send(docs)
+//     })
+// })
 
 // //API CRUD
 
-// //Create
+//Create
 // app.post('/api/led', (req, res) => {
 //     console.log(req.body)
 //     db.insert(req.body)
