@@ -133,6 +133,7 @@ input[type=range]::-ms-fill-lower{
     cursor: pointer;
     position: relative;
     margin: 0 auto;
+    z-index: 2;
 }
 
 #tab_motif{
