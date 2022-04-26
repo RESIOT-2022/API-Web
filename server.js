@@ -21,7 +21,8 @@ wss.on('connection', (ws) => {
     console.log("A new client Connected")
     ws.send('Welcome new client')
 
-    ws.on('message', (message) => {
+    ws.on('message', (text) => {
+        let message = JSON.parse(text)
         console.log('received : %s', message)
         ws.send('Got ur message its : ' + message)
     })

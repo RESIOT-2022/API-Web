@@ -10,20 +10,21 @@
     <script>
         //Create WebSocket connection
         const socket = new WebSocket('ws://localhost:8080')
-            
-            //Connection opened
-            socket.addEventListener('open', (event) => {
-                socket.send('hello server!!')
-            })
-            
-            //Listen for messages
-            socket.addEventListener('message', (event) => {
-                console.log('Message from server : ' + event.data)
-            })
-            
-            const sendMessage = () => {
-                socket.send('Hello from client')
-            }
+
+        //Connection opened
+        socket.addEventListener('open', (event) => {
+            socket.send(JSON.stringify('hello server!!'))
+        })
+
+        //Listen for messages
+        socket.addEventListener('message', (event) => {
+            console.log('Message from server : ' + event.data)
+        })
+
+        const sendMessage = () => {
+            socket.send('Hello from client')
+        }
+
     </script>
 </head>
 
@@ -114,7 +115,7 @@
                 let elem = i + 1
                 _td[i].onclick = function () {
                     document.getElementById("led"+elem).src = "images/led-orange"       
-                    socket.send({led: elem, state: 'orange'})
+                    alert(JSON.stringify({led: elem, state: "orange"}))
                 }
             }
             for (var i=0 ; i<_td2.length ; i++) {
