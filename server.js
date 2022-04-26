@@ -34,6 +34,11 @@ app.get('/', (req, res) => {
     res.sendFile(`${__dirname}/front/index3.html`)
 })
 
+/*app.get('/images/led-off', (req, res) => {
+    res.set('Content-Type', 'image/png')
+    res.sendFile(`${__dirname}/front/images/led_icon_off.png`)
+})*/
+
 app.get('/images/led-blue', (req, res) => {
     res.set('Content-Type', 'image/png')
     res.sendFile(`${__dirname}/front/images/led_icon_blue.png`)
