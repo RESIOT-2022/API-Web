@@ -52,10 +52,10 @@
         <div id="PowerOff"></div>
         <table id="tab_motif">
             <tr>
-                <td class="motif">Motif 1</td>
-                <td class="motif">Motif 2</td>
-                <td class="motif">Motif 3</td>
-                <td class="motif">Motif 4</td>
+                <td id="motif1" class="motif">Motif 1</td>
+                <td id="motif2" class="motif">Motif 2</td>
+                <td id="motif3" class="motif">Motif 3</td>
+                <td id="motif4" class="motif">Motif 4</td>
             </tr>
         </table>
     </div>   
@@ -65,16 +65,16 @@
             console.log(slider.value);
         }
 
+        function sleep (time) {
+            return new Promise((resolve) => setTimeout(resolve, time));
+        }
+
         var slider = document.getElementById("slider");
         var SelectBtn = document.getElementById("SelectBtn");
         var SelectValue = document.getElementById("SelectValue");
         var PowerOff = document.getElementById("PowerOff");
         var ProgressBar2 = document.getElementById("ProgressBar2");
 
-        var nb = document.getElementById("nb");
-        nb.onclick = function(){
-            alert(this.content);
-        }
         PowerOff.onclick = function(){
             alert(this.content);
         }
@@ -90,7 +90,7 @@
         }
 
         var led1 = document.getElementById("led1");
-        function changeLED(){
+        /*function changeLED(){
             led1.src = 'images/change'
             var table = document.getElementsByTagName('table')[0]; // ou getElementById()
             var tbody = table.getElementsByTagName('tbody')[0];
@@ -100,9 +100,12 @@
                     _td[i]
                 }
             }
-        }
+        }*/
         
-        // led1.addEventListener('click', changeLED())
+        /*var motif1 = document.getElementById("motif1");
+        motif1.onclick = function(){
+            document.getElementById("led1").src = "images/led-orange";
+        }*/
 
         function installEventsOnMyFuckingTable () {
             var table = document.getElementsByTagName('table')[0]; // ou getElementById()
@@ -121,13 +124,35 @@
             for (var i=0 ; i<_td2.length ; i++) {
                 _td2[i].onclick = function () {
                 alert(this.textContent);
+                led1.src = "images/led-orange";
+                sleep(1000).then(() => {
+                    //Do something after the sleep!
+                    led1.src = "images/led-blue";
+                    sleep(1000).then(() => {
+                    //Do something after the sleep!
+                    led1.src = "images/led-orange";
+                    sleep(1000).then(() => {
+                    //Do something after the sleep!
+                    led1.src = "images/led-blue";
+                });
+                });
+                });
+                sleep(10000).then(() => {
+                    //Do something after the sleep!
+                    led1.src = "images/led-orange";
+                });
+                sleep(1000).then(() => {
+                    //Do something after the sleep!
+                    led1.src = "images/led-blue";
+                });
+                //document.getElementById("led1").src = "images/led-orange";
                 }
             }
         }
     </script> 
     <style>
         body{
-            background-color: #202020;
+            background-color: #1a1a1a;
             color: #fff;
             font-family: system-ui;
             position: relative;
