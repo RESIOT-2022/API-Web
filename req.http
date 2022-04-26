@@ -2,7 +2,7 @@ POST http://localhost:8080/localhost:8080/api/led HTTP/1.1
 Content-Type: application/json
 
 {
-    "number": 2,
+    "led": 1,
     "state": false
 }
 

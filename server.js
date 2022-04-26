@@ -42,6 +42,7 @@ app.get('/images/led-blue', (req, res) => {
 app.get('/images/led-orange', (req, res) => {
     res.set('Content-Type', 'image/png')
     res.sendFile(`${__dirname}/front/images/led_icon_orange.png`)
+    
 })
 
 app.get('/images/btn-icon', (req, res) => {
@@ -59,9 +60,10 @@ app.get('/images/poweroff', (req, res) => {
 
 //Create
 // app.post('/api/led', (req, res) => {
+//     res.set('Content-Type', 'application/json')
 //     console.log(req.body)
 //     db.insert(req.body)
-//     res.send(req.body)
+//     //res.send(req.body)
 // })
 
 // //Read html
@@ -102,6 +104,7 @@ app.get('/images/poweroff', (req, res) => {
 server.listen(PORT, () => {
     console.log(`Server is running on port : ${PORT}`)
 })
+
 
 /*
 const genererPageHtml = require('./pages/home.js')
