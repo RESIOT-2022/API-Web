@@ -66,7 +66,7 @@
             console.log(slider.value);
         }
 
-        function sleep (time) {
+        function sleep (time) { // sleep ms
             return new Promise((resolve) => setTimeout(resolve, time));
         }
 
@@ -75,6 +75,12 @@
         var SelectValue = document.getElementById("SelectValue");
         var PowerOff = document.getElementById("PowerOff");
         var ProgressBar2 = document.getElementById("ProgressBar2");
+        var led1 = document.getElementById("led1");
+        var led2 = document.getElementById("led2");
+        var led3 = document.getElementById("led3");
+        var led4 = document.getElementById("led4");
+        var led5 = document.getElementById("led5");
+        var tabLeds = [led1, led2, led3, led4, led5] 
 
         PowerOff.onclick = function(){
             alert(this.content);
@@ -108,62 +114,99 @@
             document.getElementById("led1").src = "images/led-orange";
         }*/
 
-        function installEventsOnMyFuckingTable () {
-            var table = document.getElementsByTagName('table')[0]; // ou getElementById()
-            //var table2 = document.getElementsByTagName('table')[1];
-            var tbody = table.getElementsByTagName('tbody')[0];
-            //var tbody2 = table2.getElementsByTagName('tbody')[0]; // 1er élément du 2ème tableau
-            var _td = tbody.getElementsByTagName('td');
-            //var _td2 = tbody2.getElementsByTagName('td');
-            for (var i=0 ; i<_td.length ; i++) {
-                let elem = i + 1
-                _td[i].onclick = function () {
-                    switch(document.getElementById("led"+elem).src){
-                        case "http://localhost:8080/images/led-orange" :
-                            document.getElementById("led"+elem).src = "images/led-blue"   
-                            socket.send(JSON.stringify({led: elem, state: "blue"}))                    
-                        break
-                        case "http://localhost:8080/images/led-blue" :
-                            document.getElementById("led"+elem).src = "images/led-orange"                      
-                            socket.send(JSON.stringify({led: elem, state: "orange"}))
-                        break
-                        default :
-                            document.getElementById("led"+elem).src = "images/led-blue"
-                            socket.send(JSON.stringify({led: elem, state: "blue"}))
-                    }
+        var startChen = document.getElementById('btnStartChen')
+        //startChen.addEventListener('click', StartChenillard())
 
-                    
-                    //alert(document.getElementById("led"+elem).value)
+        startChen.onclick = () => {
+            clearInterval(refresh);
+            //reset()
+            let i = 0
+            tabLeds[i].src = "images/led-orange"
+            var refresh = setInterval(() => {
+                tabLeds[i].src = "images/led-blue"
+                tabLeds[i+1].src = "images/led-orange"
+                i += 1
+                if(i==5){
+                    i=0
                 }
-            }
-            for (var i=0 ; i<_td2.length ; i++) {
-                _td2[i].onclick = function () {
-                alert(this.textContent);
-                led1.src = "images/led-orange";
-                sleep(1000).then(() => {
-                    //Do something after the sleep!
-                    led1.src = "images/led-blue";
-                    sleep(1000).then(() => {
-                    //Do something after the sleep!
-                    led1.src = "images/led-orange";
-                    sleep(1000).then(() => {
-                    //Do something after the sleep!
-                    led1.src = "images/led-blue";
-                });
-                });
-                });
-                sleep(10000).then(() => {
-                    //Do something after the sleep!
-                    led1.src = "images/led-orange";
-                });
-                sleep(1000).then(() => {
-                    //Do something after the sleep!
-                    led1.src = "images/led-blue";
-                });
-                //document.getElementById("led1").src = "images/led-orange";
-                }
+            }, 500)
+        }
+
+        var table = document.getElementsByTagName('table')[0]; // ou getElementById()
+        var tbody = table.getElementsByTagName('tbody')[0];
+        var _td = tbody.getElementsByTagName('td');
+        _td.forEach(element => {
+            _td[element].onclick = () => {
+            let elem = '1'
+            switch(document.getElementById("led"+elem).src){
+                case "https://87f3-148-60-99-3.eu.ngrok.io/images/led-orange" :
+                    document.getElementById("led"+elem).src = "images/led-blue"   
+                    socket.send(JSON.stringify({led: elem, state: "blue"}))                    
+                break
+                case "https://87f3-148-60-99-3.eu.ngrok.io/images/led-blue" :
+                    document.getElementById("led"+elem).src = "images/led-orange"                      
+                    socket.send(JSON.stringify({led: elem, state: "orange"}))
+                break
+                default :
+                    document.getElementById("led"+elem).src = "images/led-blue"
+                    socket.send(JSON.stringify({led: elem, state: "blue"}))
             }
         }
+        });
+        
+        // function installEventsOnMyFuckingTable () {
+        //     var table = document.getElementsByTagName('table')[0]; // ou getElementById()
+        //     var tbody = table.getElementsByTagName('tbody')[0];
+        //     var _td = tbody.getElementsByTagName('td');
+        //     for (var i=0 ; i<_td.length ; i++) {
+        //         let elem = i + 1
+        //         _td[i].onclick = function () {
+        //             switch(document.getElementById("led"+elem).src){
+        //                 case "http://localhost:8080/images/led-orange" :
+        //                     document.getElementById("led"+elem).src = "images/led-blue"   
+        //                     socket.send(JSON.stringify({led: elem, state: "blue"}))                    
+        //                 break
+        //                 case "http://localhost:8080/images/led-blue" :
+        //                     document.getElementById("led"+elem).src = "images/led-orange"                      
+        //                     socket.send(JSON.stringify({led: elem, state: "orange"}))
+        //                 break
+        //                 default :
+        //                     document.getElementById("led"+elem).src = "images/led-blue"
+        //                     socket.send(JSON.stringify({led: elem, state: "blue"}))
+        //             }
+
+                    
+        //             //alert(document.getElementById("led"+elem).value)
+        //         }
+        //     }
+        //     // for (var i=0 ; i<_td2.length ; i++) {
+        //     //     _td2[i].onclick = function () {
+        //     //     alert(this.textContent);
+        //     //     led1.src = "images/led-orange";
+        //     //     sleep(1000).then(() => {
+        //     //         //Do something after the sleep!
+        //     //         led1.src = "images/led-blue";
+        //     //         sleep(1000).then(() => {
+        //     //         //Do something after the sleep!
+        //     //         led1.src = "images/led-orange";
+        //     //         sleep(1000).then(() => {
+        //     //         //Do something after the sleep!
+        //     //         led1.src = "images/led-blue";
+        //     //     });
+        //     //     });
+        //     //     });
+        //     //     sleep(10000).then(() => {
+        //     //         //Do something after the sleep!
+        //     //         led1.src = "images/led-orange";
+        //     //     });
+        //     //     sleep(1000).then(() => {
+        //     //         //Do something after the sleep!
+        //     //         led1.src = "images/led-blue";
+        //     //     });
+        //     //     //document.getElementById("led1").src = "images/led-orange";
+        //     //     }
+        //     // }
+        // }
     </script> 
     <style>
         body{
