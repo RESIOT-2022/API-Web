@@ -46,7 +46,9 @@
 
         <input type="range" min="0" max ="100" value="50" id="slider">
 
+       
         <div id="SelectBtn"></div>
+        
         <div id="SelectValue"></div>
 
         <p>Slide to change speed !</p>
@@ -75,9 +77,9 @@
                 cancellationToken.cancel = function() {
                     reject(new Error('sleep() cancelled'));
                 };
-            setTimeout(resolve, ms));
-            }
+            setTimeout(resolve, ms)});
         }*/
+
         function sleepbis(){
             chenille_On = setTimeout()
         }
@@ -122,10 +124,21 @@
         SelectValue.innerHTML = slider.value;
         ProgressBar2.style.width = slider.value + "%";
 
+        function init(){
+            let position = 0.44 *slider.value +25
+            SelectBtn.style.left = position + "%"
+            SelectValue.style.left = position + "%"
+            initialisation = false
+        }
+
         slider.oninput = function(){
-            slider.style.left = slider.value + "%";
+            //slider.style.left = slider.value + "%";
             SelectValue.innerHTML = slider.value;
             ProgressBar2.style.width = slider.value + "%";
+            SelectBtn.style.position = slider.style.position
+            let position = 0.44 *slider.value +25 
+            SelectBtn.style.left = position + "%"
+            SelectValue.style.left = position + "%"
         }
         //MON ESSAI DE CHENILLARD / RECURSIVITE
         function chenille(){
@@ -160,58 +173,25 @@
             chenille();
         }
 
-        /* CHENILLARD ACTIF / NE SE REPETE PAS
-        startChen.onclick = () => {
-            clearInterval(refresh);
-            //reset()
-            let i = 0
-            tabLeds[i].src = "images/led-orange"
-            var refresh = setInterval(() => {
-                tabLeds[i].src = "images/led-blue"
-                tabLeds[i+1].src = "images/led-orange"
-                i += 1
-                if(i==5){
-                    motif3.innerHTML = ">5"
-                    i=0
-                }
-            }, 500)
-        }*/
-
-        // var table = document.getElementsByTagName('table')[0]; // ou getElementById()
-        // var tbody = table.getElementsByTagName('tbody')[0];
-        // var _td = tbody.getElementsByTagName('td');
-        // _td.forEach(element => {
-        //     _td[element].onclick = () => {
-        //     let elem = '1'
-        //     switch(document.getElementById("led"+elem).src){
-        //         case "http://7ec7-79-83-33-241.ngrok.io/images/led-orange" :
-        //             document.getElementById("led"+elem).src = "images/led-blue"   
-        //             socket.send(JSON.stringify({led: elem, state: "blue"}))                    
-        //         break
-        //         case "http://7ec7-79-83-33-241.ngrok.io/images/led-blue" :
-        //             document.getElementById("led"+elem).src = "images/led-orange"                      
-        //             socket.send(JSON.stringify({led: elem, state: "orange"}))
-        //         break
-        //         default :
-        //             document.getElementById("led"+elem).src = "images/led-blue"
-        //             socket.send(JSON.stringify({led: elem, state: "blue"}))
-        //     }
-        // }
-        // });
+        var initialisation = true
+        function installEventsOnMyFuckingTable(){
+            if(initialisation){
+                init()
+            }
         
-        function installEventsOnMyFuckingTable () {
             var table = document.getElementsByTagName('table')[0]; // ou getElementById()
             var tbody = table.getElementsByTagName('tbody')[0];
             var _td = tbody.getElementsByTagName('td');
-            for (var i=0 ; i<_td.length ; i++) {
-                let elem = i + 1
-                _td[i].onclick = function () {
+         
+            for (let i=0 ; i<_td.length ; i++) {
+                _td[i].onclick = () => {
+                    let elem = i + 1
                     switch(document.getElementById("led"+elem).src){
-                        case "http://7ec7-79-83-33-241.ngrok.io//images/led-orange" :
+                        case "https://87f3-148-60-99-3.eu.ngrok.io/images/led-orange" :
                             document.getElementById("led"+elem).src = "images/led-blue"   
                             socket.send(JSON.stringify({led: elem, state: "blue"}))                    
                         break
-                        case "http://7ec7-79-83-33-241.ngrok.io//images/led-blue" :
+                        case "https://87f3-148-60-99-3.eu.ngrok.io/images/led-blue" :
                             document.getElementById("led"+elem).src = "images/led-orange"                      
                             socket.send(JSON.stringify({led: elem, state: "orange"}))
                         break
@@ -221,40 +201,7 @@
                     }
                 }
             }
-        }
-
-                    
-        //             //alert(document.getElementById("led"+elem).value)
-        //         }
-        //     }
-        //     // for (var i=0 ; i<_td2.length ; i++) {
-        //     //     _td2[i].onclick = function () {
-        //     //     alert(this.textContent);
-        //     //     led1.src = "images/led-orange";
-        //     //     sleep(1000).then(() => {
-        //     //         //Do something after the sleep!
-        //     //         led1.src = "images/led-blue";
-        //     //         sleep(1000).then(() => {
-        //     //         //Do something after the sleep!
-        //     //         led1.src = "images/led-orange";
-        //     //         sleep(1000).then(() => {
-        //     //         //Do something after the sleep!
-        //     //         led1.src = "images/led-blue";
-        //     //     });
-        //     //     });
-        //     //     });
-        //     //     sleep(10000).then(() => {
-        //     //         //Do something after the sleep!
-        //     //         led1.src = "images/led-orange";
-        //     //     });
-        //     //     sleep(1000).then(() => {
-        //     //         //Do something after the sleep!
-        //     //         led1.src = "images/led-blue";
-        //     //     });
-        //     //     //document.getElementById("led1").src = "images/led-orange";
-        //     //     }
-        //     // }
-        
+        }        
     </script> 
     <style>
         body{
@@ -301,7 +248,8 @@
 
         input[type=range]::-webkit-slider-thumb{
             -webkit-appearance: none;
-            background: #c5c881 url(images/btn-icon);
+            /*background: #c5c881;/* url(images/btn-icon);*/
+            background-image: url(images/btn-icon);
             border: none;
             height: 20px;
             width: 20px;
