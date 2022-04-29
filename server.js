@@ -25,6 +25,7 @@ wss.on('connection', (ws) => {
         let message = JSON.parse(text)
         console.log('received : %s', message)
         ws.send('Got ur message its : ' + message)
+        //wss.clients.forEach()   // envoi à tous les clients 
     })
 })
 
@@ -47,7 +48,6 @@ app.get('/images/led-blue', (req, res) => {
 app.get('/images/led-orange', (req, res) => {
     res.set('Content-Type', 'image/png')
     res.sendFile(`${__dirname}/front/images/led_icon_orange.png`)
-    
 })
 
 app.get('/images/btn-icon', (req, res) => {
