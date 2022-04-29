@@ -54,7 +54,7 @@
         <table id="tab_motif">
             <tr>
                 <td id="btnStartChen" class="motif">Démarer Chenillard</td>
-                <td class="motif">Motif 2</td>
+                <td id="btnChangeChen" class="motif">Changer sens</td>
                 <td class="motif">Motif 3</td>
                 <td class="motif">Motif 4</td>
             </tr>
@@ -76,10 +76,23 @@
         var PowerOff = document.getElementById("PowerOff");
         var ProgressBar2 = document.getElementById("ProgressBar2");
 
-        PowerOff.onclick = function(){
-            alert(this.content);
-        }
+        var led1 = document.getElementById("led1");
+        var led2 = document.getElementById("led2");
+        var led3 = document.getElementById("led3");
+        var led4 = document.getElementById("led4");
+        var led5 = document.getElementById("led5");
+
+        var tabLeds = [led1, led2, led3, led4, led5];
         
+        led1.onclick = function(){
+            /*if(led1.src == "images/led-orange"){
+                led1.src = "images/led-blue"
+            }
+            else if(led1.src == "images/led-blue"){
+                led1.src = "images/led-orange"
+            }*/
+
+        }
 
         SelectValue.innerHTML = slider.value;
         ProgressBar2.style.width = slider.value + "%";
@@ -108,13 +121,52 @@
             document.getElementById("led1").src = "images/led-orange";
         }*/
 
+        var btnStartChen = document.getElementById("btnStartChen");
+        var ledIndice = 0;
+        var timeLapse = 500;
+        var timeBoucle = 1;
+        btnStartChen.onclick = function(){ // on appuie sur le chenillard
+            chenille();
+        }
+
+        function chenille(){
+            sleep(timeLapse*timeBoucle).then(() => {
+                reset();
+                tabLeds[ledIndice].src = "images/led-orange";
+                ledIndice += 1;
+                timeBoucle += 1;
+                if(ledIndice > 4){
+                    ledIndice = 0;
+                }
+            });
+        }
+
+        var btnChangeChen = document.getElementById("btnChangeChen");
+        btnChangeChen.onclick = function(){
+
+        }
+
+        function reset(){
+            led1.src = "images/led-blue";
+            led2.src = "images/led-blue";
+            led3.src = "images/led-blue";
+            led4.src = "images/led-blue";
+            led5.src = "images/led-blue";
+        }
+
+        PowerOff.onclick = function(){
+            reset();
+            if(led1.src == "images/led-orange"){
+                led1.src = "images/led-blue"
+            } else{
+                led1.src = "images/led-orange"
+            }
+        }
+
         function installEventsOnMyFuckingTable () {
             var table = document.getElementsByTagName('table')[0]; // ou getElementById()
-            //var table2 = document.getElementsByTagName('table')[1];
             var tbody = table.getElementsByTagName('tbody')[0];
-            //var tbody2 = table2.getElementsByTagName('tbody')[0]; // 1er élément du 2ème tableau
             var _td = tbody.getElementsByTagName('td');
-            //var _td2 = tbody2.getElementsByTagName('td');
             for (var i=0 ; i<_td.length ; i++) {
                 let elem = i + 1
                 _td[i].onclick = function () {
@@ -136,33 +188,7 @@
                     //alert(document.getElementById("led"+elem).value)
                 }
             }
-            for (var i=0 ; i<_td2.length ; i++) {
-                _td2[i].onclick = function () {
-                alert(this.textContent);
-                led1.src = "images/led-orange";
-                sleep(1000).then(() => {
-                    //Do something after the sleep!
-                    led1.src = "images/led-blue";
-                    sleep(1000).then(() => {
-                    //Do something after the sleep!
-                    led1.src = "images/led-orange";
-                    sleep(1000).then(() => {
-                    //Do something after the sleep!
-                    led1.src = "images/led-blue";
-                });
-                });
-                });
-                sleep(10000).then(() => {
-                    //Do something after the sleep!
-                    led1.src = "images/led-orange";
-                });
-                sleep(1000).then(() => {
-                    //Do something after the sleep!
-                    led1.src = "images/led-blue";
-                });
-                //document.getElementById("led1").src = "images/led-orange";
-                }
-            }
+            
         }
     </script> 
     <style>
