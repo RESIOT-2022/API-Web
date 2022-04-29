@@ -70,14 +70,14 @@
             //return new Promise((resolve) => setTimeout(resolve, time));
         }
 
-        function sleep(ms, cancellationToken) {
+        /*function sleep(ms, cancellationToken) {
             return new Promise((resolve, reject) => function() {
                 cancellationToken.cancel = function() {
                     reject(new Error('sleep() cancelled'));
                 };
             setTimeout(resolve, ms));
             }
-        }
+        }*/
         function sleepbis(){
             chenille_On = setTimeout()
         }
@@ -346,13 +346,14 @@
             line-height: 30px;
             font-size: 18px;
             font-weight: bold;
+            letter-spacing: 0px;
         }
 
         #SelectValue::after{
             content: '';
             border-bottom: 17px solid #ffd200;
-            border-left: 17px solid #202020;
-            border-right: 16px solid #202020;
+            border-left: 17px solid #1a1a1a;
+            border-right: 16px solid #1a1a1a;
             position: absolute;
             top: -13px;
             left:0;
