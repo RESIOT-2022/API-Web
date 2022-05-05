@@ -57,8 +57,8 @@
             <tr>
                 <td id="btnStartChen" class="motif">Démarer Chenillard</td>
                 <td id="btnChangeChen" class="motif">Changer sens</td>
-                <td id="motif3" class="motif">Motif 3</td>
-                <td id="motif4" class="motif">Motif 4</td>
+                <td id="btnLEDsAleatoires" class="motif">Mode Aléatoire</td>
+                <td id="btnColorAlea" class="motif">Couleurs aléatoires</td>
             </tr>
         </table>
     </div>   
@@ -69,19 +69,7 @@
         }
 
         function sleep (time) { // sleep ms
-            //return new Promise((resolve) => setTimeout(resolve, time));
-        }
-
-        /*function sleep(ms, cancellationToken) {
-            return new Promise((resolve, reject) => function() {
-                cancellationToken.cancel = function() {
-                    reject(new Error('sleep() cancelled'));
-                };
-            setTimeout(resolve, ms)});
-        }*/
-
-        function sleepbis(){
-            chenille_On = setTimeout()
+            return new Promise((resolve) => setTimeout(resolve, time));
         }
 
         var slider = document.getElementById("slider");
@@ -91,12 +79,14 @@
         var ProgressBar2 = document.getElementById("ProgressBar2");
 
         var chenille_On;
+        var leftToRight;
         var ledIndice;
-        var ledBoucle;
+        var startingChenille;
+        var alea;
+        var colorAlea;
         var minSpeedChenille = 2000; // 2000 ms
         var maxSpeedChenille = 50; // 50 ms
 
-        var ledBoucle;
         var led1 = document.getElementById("led1");
         var led2 = document.getElementById("led2");
         var led3 = document.getElementById("led3");
@@ -104,23 +94,11 @@
         var led5 = document.getElementById("led5");
         var tabLeds = [led1, led2, led3, led4, led5] 
 
-        var startChen = document.getElementById('btnStartChen')
+        var btnstartChen = document.getElementById('btnStartChen')
         var btnChangeChen = document.getElementById('btnChangeChen')
-        var motif3 = document.getElementById('motif3')
-        var motif4 = document.getElementById('motif4')
+        var btnLEDsAleatoires = document.getElementById('btnLEDsAleatoires')
+        var btnColorAlea = document.getElementById('btnColorAlea')
         
-        function reset(){
-            tabLeds.forEach(elem_led => elem_led.src = "images/led-blue")
-        }
-
-        PowerOff.onclick = function(){
-            chenille_On = false;
-            ledIndice = 0;
-            startingChenille = false;
-            reset();
-        }
-
-
         SelectValue.innerHTML = slider.value;
         ProgressBar2.style.width = slider.value + "%";
 
@@ -140,37 +118,129 @@
             SelectBtn.style.left = position + "%"
             SelectValue.style.left = position + "%"
         }
+
+        function randomLED(){
+            return Math.floor(Math.random() * 5);
+        }
+
+        function colorLED(ledIndice){
+            switch(ledIndice){
+                case 0 : 
+                    return "images/led-orange";
+                case 1 : 
+                    return "images/led-red";
+                case 2 : 
+                    return "images/led-yellow";
+                case 3 : 
+                    return "images/led-green";
+            }
+        }
+
+        function reset_leds(){
+            tabLeds.forEach(elem_led => elem_led.src = "images/led-blue") //remet toutes les LEDs à l'état initial = bleu
+        }
+
+        function reset_chenille(){
+            reset_leds();
+            chenille_On = false;
+            ledIndice = 0;
+            startingChenille = false;
+            alea = false;
+            colorAlea = false;
+        }
+
+        PowerOff.onclick = function(){
+            reset_chenille();
+        }
+
+        btnstartChen.onclick = function(){
+            reset_chenille();
+            chenille_On = true;
+            ledIndice = 0;
+            startingChenille = true;
+            leftToRight = true;
+            alea = false;
+            chenille();
+        }
+
+        btnChangeChen.onclick = function(){
+            reset_chenille();
+            chenille_On = true;
+            ledIndice = 4;
+            startingChenille = true;
+            leftToRight = false;
+            alea = false;
+            chenille();
+        }
+
+        btnLEDsAleatoires.onclick = function(){
+            reset_chenille();
+            chenille_On = true;
+            ledIndice = randomLED();
+            startingChenille = true;
+            leftToRight = false;
+            alea = true;
+            chenille();
+        }
+
+        btnColorAlea.onclick = function(){
+            //reset_chenille();
+            colorAlea = true;
+        }
+
         //MON ESSAI DE CHENILLARD / RECURSIVITE
         function chenille(){
-            if(startingChenille){
-                tabLeds[ledIndice].src = "images/led-orange";
-                ledIndice +=1;
+            if(startingChenille){ // partie de code un peu sale pour gérer une bizarrerie à la 1ère incrémentation au lancement
+                reset_leds();
+                if(colorAlea == true){
+                    tabLeds[ledIndice].src = colorLED(Math.floor(Math.random() * 4));
+                } else {
+                    tabLeds[ledIndice].src = "images/led-orange";// = 0 si leftToRight, 4 si rightToLeft, <=4 et >=0 si aleatoire
+                }
+                if(alea == true){
+                    ledIndice = randomLED();
+                    //ledIndice = Math.floor(Math.random() * 4);
+                } else {
+                    if(leftToRight == true){
+                        ledIndice +=1;
+                    } else {
+                        ledIndice -=1;
+                    }
+                }
                 startingChenille = false;
                 var start = new Date().getTime();
                 while (new Date().getTime() < start + 500);
             }
-            motif3.innerHTML = chenille_On;
+            //motif4.innerHTML = ledIndice;
             sleep(((maxSpeedChenille-minSpeedChenille)/100)*slider.value + 2000).then(() => { //max speed = 50 ms / min speed = 2000 ms / fonction affine
-                if(chenille_On = true){
-                    reset();
-                    tabLeds[ledIndice].src = "images/led-orange"
-                    ledIndice += 1;
-                    if(ledIndice > 4){
-                        ledIndice = 0;
+                if(chenille_On == true){
+                    
+                    if(colorAlea == true){
+                        tabLeds[ledIndice].src = colorLED(Math.floor(Math.random() * 4));
+                    } else {
+                        reset_leds();
+                        tabLeds[ledIndice].src = "images/led-orange";// = 0 si leftToRight, 4 si rightToLeft, <=4 et >=0 si aleatoire
+                    }
+                    if(alea == true){
+                        ledIndice = randomLED();
+                        //ledIndice = Math.floor(Math.random() * 4);
+                    } else {
+                        if(leftToRight == true){
+                            ledIndice += 1;
+                            if(ledIndice > 4){
+                                ledIndice = 0;
+                            }
+                        } else {
+                            ledIndice -= 1;
+                            if(ledIndice < 0){
+                                ledIndice = 4;
+                            }
+                        }
                     }
                     return chenille();
                 }
-                else{
-                    return 0;
-                }
+                else; // si chenille_On == false // pas de chenillard;
             })
-        }
-
-        motif4.onclick = function(){
-            chenille_On = true;
-            ledIndice = 0;
-            startingChenille = true;
-            chenille();
         }
 
         var initialisation = true
@@ -185,13 +255,16 @@
          
             for (let i=0 ; i<_td.length ; i++) {
                 _td[i].onclick = () => {
+                    if(chenille_On == true){
+                        reset_chenille();
+                    }
                     let elem = i + 1
                     switch(document.getElementById("led"+elem).src){
-                        case "https://87f3-148-60-99-3.eu.ngrok.io/images/led-orange" :
+                        case "http://a6fa-148-60-99-14.ngrok.io/images/led-orange" :
                             document.getElementById("led"+elem).src = "images/led-blue"   
                             socket.send(JSON.stringify({led: elem, state: "blue"}))                    
                         break
-                        case "https://87f3-148-60-99-3.eu.ngrok.io/images/led-blue" :
+                        case "http://a6fa-148-60-99-14.ngrok.io/images/led-blue" :
                             document.getElementById("led"+elem).src = "images/led-orange"                      
                             socket.send(JSON.stringify({led: elem, state: "orange"}))
                         break

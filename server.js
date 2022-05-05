@@ -50,6 +50,21 @@ app.get('/images/led-orange', (req, res) => {
     res.sendFile(`${__dirname}/front/images/led_icon_orange.png`)
 })
 
+app.get('/images/led-green', (req, res) => {
+    res.set('Content-Type', 'image/png')
+    res.sendFile(`${__dirname}/front/images/led_icon_green.png`)
+})
+
+app.get('/images/led-yellow', (req, res) => {
+    res.set('Content-Type', 'image/png')
+    res.sendFile(`${__dirname}/front/images/led_icon_yellow.png`)
+})
+
+app.get('/images/led-red', (req, res) => {
+    res.set('Content-Type', 'image/png')
+    res.sendFile(`${__dirname}/front/images/led_icon_red.png`)
+})
+
 app.get('/images/btn-icon', (req, res) => {
     res.set('Content-Type', 'image/png')
     res.sendFile(`${__dirname}/front/images/button_icon.png`)
