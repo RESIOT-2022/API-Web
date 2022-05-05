@@ -9,16 +9,36 @@
     
     <script>
         //Create WebSocket connection
-        const socket = new WebSocket('ws://localhost:8080')
+        const socket = new WebSocket('ws://localhost:3000')
 
         //Connection opened
         socket.addEventListener('open', (event) => {
-            socket.send(JSON.stringify('hello server!!'))
+            socket.send(JSON.stringify({message : 'hello server!!'}))
         })
 
         //Listen for messages
         socket.addEventListener('message', (event) => {
-            console.log('Message from server : ' + event.data)
+            //le message envoyé par le serveur doit être un JSON
+            console.log(typeof event.data)
+            console.log(event.data)
+            let message = JSON.parse(event.data)
+            console.log(typeof message)
+            console.log(message)
+            switch(message.action){
+                case "hello":
+                    console.log('Message from server : ' + message.message)
+                break
+                case "change-state":    // Changer l'état de la LED
+                    let elem = message.led 
+                    if(message.state == 'orange'){
+                        document.getElementById("led"+elem).src = "images/led-orange"   
+                    }else{
+                        document.getElementById("led"+elem).src = "images/led-blue"                      
+                    }
+                    console.log('Message from server : ' + message.message)
+                break
+            }
+            
 
         })
 
@@ -92,7 +112,8 @@
         var led3 = document.getElementById("led3");
         var led4 = document.getElementById("led4");
         var led5 = document.getElementById("led5");
-        var tabLeds = [led1, led2, led3, led4, led5] 
+        var tabLeds = [led1, led2, led3, led4, led5]        
+        var initialisation = true
 
         var btnstartChen = document.getElementById('btnStartChen')
         var btnChangeChen = document.getElementById('btnChangeChen')
@@ -103,7 +124,7 @@
         ProgressBar2.style.width = slider.value + "%";
 
         function init(){
-            let position = 0.44 *slider.value +25
+            let position = 0.45 *slider.value +26 
             SelectBtn.style.left = position + "%"
             SelectValue.style.left = position + "%"
             initialisation = false
@@ -114,7 +135,7 @@
             SelectValue.innerHTML = slider.value;
             ProgressBar2.style.width = slider.value + "%";
             SelectBtn.style.position = slider.style.position
-            let position = 0.44 *slider.value +25 
+            let position = 0.45 *slider.value +26 
             SelectBtn.style.left = position + "%"
             SelectValue.style.left = position + "%"
         }
@@ -262,15 +283,15 @@
                     switch(document.getElementById("led"+elem).src){
                         case "http://a6fa-148-60-99-14.ngrok.io/images/led-orange" :
                             document.getElementById("led"+elem).src = "images/led-blue"   
-                            socket.send(JSON.stringify({led: elem, state: "blue"}))                    
+                            socket.send(JSON.stringify({led: elem, state: "blue", message: "Led " + elem + " éteinte", action: "change-state"}))                    
                         break
                         case "http://a6fa-148-60-99-14.ngrok.io/images/led-blue" :
                             document.getElementById("led"+elem).src = "images/led-orange"                      
-                            socket.send(JSON.stringify({led: elem, state: "orange"}))
+                            socket.send(JSON.stringify({led: elem, state: "orange", message: "Led " + elem + " allumée", action: "change-state"}))
                         break
                         default :
                             document.getElementById("led"+elem).src = "images/led-blue"
-                            socket.send(JSON.stringify({led: elem, state: "blue"}))
+                            socket.send(JSON.stringify({led: elem, state: "blue", message: "Led " + elem + " éteinte", action: "change-state"}))
                     }
                 }
             }

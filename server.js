@@ -1,10 +1,11 @@
+const { Socket } = require('dgram')
 const express = require('express')
 const app = express() //Start Express
 const DataStore =require('nedb')
 const path =require('path')
 const WebSocket = require('ws')
 const server = require('http').createServer(app)
-const PORT = 8080
+const PORT = 3000
 
 //BDD
 const db = new DataStore({filename: 'led'})
@@ -19,13 +20,31 @@ const wss = new WebSocket.Server({ server:server })
 
 wss.on('connection', (ws) => {
     console.log("A new client Connected")
-    ws.send('Welcome new client')
+    ws.send(JSON.stringify({message: 'Welcome new client', action: 'hello'}))
 
     ws.on('message', (text) => {
         let message = JSON.parse(text)
-        console.log('received : %s', message)
-        ws.send('Got ur message its : ' + message)
-        //wss.clients.forEach()   // envoi à tous les clients 
+        console.log('received : %s', message.message)
+        //ws.send('Got ur message its : ' + message.message)
+        switch(message.action){
+            case "change-state":
+                //on envoie l'état de la led à tous les clients
+                if(message.state == 'orange'){
+                    wss.clients.forEach(client => {
+                        client.send(JSON.stringify({led: message.led, state: message.state, message: 'led '+ message.led +' allumée', action: "change-state"}))
+                    })
+                }else {
+                    wss.clients.forEach(client => {
+                        client.send(JSON.stringify({led: message.led, state: message.state, message: 'led '+ message.led +' éteinte', action: "change-state"}))
+                    })
+                }
+            break
+            default :
+                wss.clients.forEach(client => {
+                    client.send(JSON.stringify({led: null, state: null,message: 'hello', action: "hello"}))
+                })   // envoi à tous les clients 
+        }
+        
     })
 })
 
