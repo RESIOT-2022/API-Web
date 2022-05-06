@@ -73,7 +73,7 @@
         <div id="SelectValue"></div>
 
         <p>Here is the speed !</p>
-        
+
         <!-- Boutons pour gérer le chenillard // 4 selons la maquette KNX -->
         <table id="tab_motif">
             <tr>
@@ -120,6 +120,14 @@
         
         var numMotif = 0; // variable liée au choix du motif du chenillard
 
+        // VARIABLES LIEES AUX DIFFERENTS MOTIFS
+        var toLeft = true; // variable liée à certains motifs
+        var puting_on = true; // variable liée à certains motifs
+        var ledIndiceAtPreciseMoment; // variable liée à certains motifs
+        var i_LEDs_On = 0;
+        var parity = true; // variable liée à certains motifs
+        var lights_On = true; // variable liée à certains motifs
+
         SelectValue.innerHTML = slider.value;
         ProgressBar2.style.width = slider.value + "%";
 
@@ -149,10 +157,10 @@
 
         btnChenillard.onclick = function(){
             if(chenille_On == true){ // le chenillard tourne : on veut l'arrêter et modifier la page en conséquence
-                btnChenillard.innerHTML = "Arrêter chenillard"
+                btnChenillard.innerHTML = "Lancer chenillard"
                 chenille_On = false;
             } else { // le chenillard ne tourne pas : on veut lancer le chenillard et modifier la page en conséquence
-                btnChenillard.innerHTML = "Lancer chenillard"
+                btnChenillard.innerHTML = "Arrêter chenillard"
                 chenille_On = true;
                 //chenille(); // lancement du chenillard simple
                 chenilleMOTIFS(); // lancement du chenillard avec choix du motif
@@ -198,7 +206,7 @@
         btnMotifs.onclick = function(){ // on change de motif de chenillard
             if(chenille_On == true){ // modification seulement si chenillard actif (choix personnel)
                 numMotif += 1;
-                if(numMotif > 2){ // en fonction du nombre de motifs qui ont été implémenté
+                if(numMotif > 6){ // en fonction du nombre de motifs qui ont été implémenté
                     numMotif = 0;
                 }
             } 
@@ -211,11 +219,16 @@
                 case 1 :
                     return "chenillardInverse";
                 case 2 :
-                    return "allumageAleatoire";
-                /*case 3 :
-                    return "";
+                    return "chenillardBackToBack";
+                case 3 :
+                    ledIndiceAtPreciseMoment = ledIndice;
+                    return "chenillardBackToBackEvolution";
                 case 4 :
-                    return "";*/
+                    return "allumageAleatoire";
+                case 5 :
+                    return "parityQuinconce";
+                case 6 :
+                    return "everyLEDsOn";
             }
         }
 
@@ -241,11 +254,83 @@
                                 ledIndice = 3;
                             }
                             return chenilleMOTIFS();
+                        
+                        case "chenillardBackToBack" : 
+                            reset_leds();
+                            tabLeds[ledIndice].src = "images/led-orange"
+                            if(ledIndice <= 0){
+                                toLeft = false;
+                            } else if (ledIndice >= 3){
+                                toLeft = true;
+                            }
+                            if(toLeft == true){
+                                ledIndice -= 1;
+                            } else {
+                                ledIndice += 1;
+                            }
+                            return chenilleMOTIFS();
+
+                        case "chenillardBackToBackEvolution" :
+                            /*i_LEDs_On += 1;
+                            if(i_LEDs_On <= 4 + ledIndiceAtPreciseMoment){
+                                if(toLeft == true){
+                                    ledIndice -= 1;
+                                    if(ledIndice)
+                                }
+                            }
+                            if(all_LEDs_On == false){
+
+                            }
+                            if(puting_on == true){
+                                tabLeds[ledIndice].src = "images/led-orange";
+                            } else {
+                                tabLeds[ledIndice].src = "images/led-blue";
+                            }*/
+                            return chenilleMOTIFS();
                     
                         case "allumageAleatoire" : 
-                            reset_leds();
                             ledIndice = Math.floor(Math.random() * 4);
-                            tabLeds[ledIndice].src = "images/led-orange";
+                            var rand = Math.floor(Math.random() * 2);
+                            if(rand == 0){
+                                tabLeds[ledIndice].src = "images/led-orange";
+                            } else {
+                                tabLeds[ledIndice].src = "images/led-blue";
+                            }
+                            return chenilleMOTIFS();
+                        
+                        case "parityQuinconce" :
+                            var i = 0;
+                            if(parity == true){
+                                while(i < tabLeds.length){
+                                    if(i%2 == 0){
+                                        tabLeds[i].src = "images/led-orange";
+                                    } else{
+                                        tabLeds[i].src = "images/led-blue";
+                                    }
+                                    i = i + 1;
+                                }
+                            } else {
+                                while(i < tabLeds.length){
+                                    if(i%2 == 0){
+                                        tabLeds[i].src = "images/led-blue";
+                                    } else{
+                                        tabLeds[i].src = "images/led-orange";
+                                    }
+                                    i = i + 1;
+                                }
+                            }
+                            if(parity == true){ parity = false;}
+                            else{ parity = true; }
+                            return chenilleMOTIFS();
+
+                        case "everyLEDsOn" :
+                            if(lights_On == true){
+                                tabLeds.forEach(elem_led => elem_led.src = "images/led-orange");
+                            } else{
+                                reset_leds();
+                            }
+                            if(lights_On == true){lights_On = false;}
+                            else{lights_On = true;}
                             return chenilleMOTIFS();
                     }
                 })
