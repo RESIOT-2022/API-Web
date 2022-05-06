@@ -109,6 +109,7 @@
         var ProgressBar2 = document.getElementById("ProgressBar2");
 
         var chenille_On = false; // variable liée à la mise en marche du chenillard
+        var startingChenille = true; // savoir si c'est le premier lancement du chenillard pour traitemet spécifique pour palier à un comportement inexpliqué
 
         var ledIndice = 0; // variable qui servira à définir l'indice des LEDs à allumer
 
@@ -121,16 +122,14 @@
         var numMotif = 0; // variable liée au choix du motif du chenillard
 
         // VARIABLES LIEES AUX DIFFERENTS MOTIFS
-        var toLeft = true; // variable liée à certains motifs
-        var puting_on = true; // variable liée à certains motifs
-        var ledIndiceAtPreciseMoment; // variable liée à certains motifs
-        var i_LEDs_On = 0;
-        var parity = true; // variable liée à certains motifs
-        var lights_On = true; // variable liée à certains motifs
+        var toLeft = true; // used in motif 'BackToBack' and more
+        var regime_stationnaire = false; // Savoir si le motif 'BackToBackEvolution' a atteint son fonctionnement normal
+        var ledIndiceAtPreciseMoment; // indice de la led lorsqu'on passe en motif 'BackToBackEvolution'
+        var parity = true; // used in motif 'parityQuinconce'
+        var lights_On = true; // used in motif 'everyLEDsOn'
 
         SelectValue.innerHTML = slider.value;
         ProgressBar2.style.width = slider.value + "%";
-
 
         function sleep (time) { // sleep ms
             return new Promise((resolve) => setTimeout(resolve, time));
@@ -215,20 +214,21 @@
         function decideMotif(){
             switch(numMotif){
                 case 0 :
-                    return "chenillardSimple";
+                    ledIndice = 0;
+                    return "chenillardSimple";              // oxxx | xoxx | xxox | xxxo | oxxx | xoxx | xxox | xxxo | oxxx
                 case 1 :
-                    return "chenillardInverse";
+                    return "chenillardInverse";             // oxxx | xxxo | xxox | xoxx | oxxx | xxxo | xxox | xoxx | oxxx
                 case 2 :
-                    return "chenillardBackToBack";
+                    return "chenillardBackToBack";          // oxxx | xoxx | xxox | xxxo | xxox | xoxx | oxxx | xoxx | xxox
                 case 3 :
-                    ledIndiceAtPreciseMoment = ledIndice;
-                    return "chenillardBackToBackEvolution";
+                    ledIndiceAtPreciseMoment = ledIndice;   // xxox | xoox | ooox | oooo | oooo | oooo | oooo | xooo | xxoo
+                    return "chenillardBackToBackEvolution"; // xxxo | oxxo | ooxo | oooo | ooox | ooxx | oxxx | xxxx | oxxx
                 case 4 :
-                    return "allumageAleatoire";
+                    return "allumageAleatoire";             // oxxx | oxxo | oxoo | xxoo | oxoo | oxxo | xxxo | xxoo | xxox
                 case 5 :
-                    return "parityQuinconce";
+                    return "parityQuinconce";               // oxox | xoxo | oxox | xoxo | oxox
                 case 6 :
-                    return "everyLEDsOn";
+                    return "everyLEDsOn";                   // oooo | xxxx | oooo | xxxx | oooo
             }
         }
 
@@ -237,7 +237,7 @@
             if(chenille_On == true){ // on vérifie que l'on veuille qu'il tourne (selon les clicks sur btnChenillard)
                 sleep(actualSpeed).then(() => { //max speed = 50 ms / min speed = 1050 ms / fonction affine pour la vitesse
                     switch(decideMotif()){
-                        case "chenillardSimple" :
+                        case "chenillardSimple" : // Les LEDs s'allument une à une de gauche à droite
                             reset_leds();
                             tabLeds[ledIndice].src = "images/led-orange";
                             ledIndice += 1;
@@ -246,7 +246,7 @@
                             }
                             return chenilleMOTIFS();
 
-                        case "chenillardInverse" :
+                        case "chenillardInverse" : // Les LEDs s'allument une à une de droite à gauche (à partir de la led du motif précédent)
                             reset_leds();
                             tabLeds[ledIndice].src = "images/led-orange";
                             ledIndice -= 1;
@@ -255,7 +255,7 @@
                             }
                             return chenilleMOTIFS();
                         
-                        case "chenillardBackToBack" : 
+                        case "chenillardBackToBack" : // Les LEDs s'allument une à une de droite à gauche puis de gauche à droite (à partir de la led du motif précédent)
                             reset_leds();
                             tabLeds[ledIndice].src = "images/led-orange"
                             if(ledIndice <= 0){
@@ -270,7 +270,10 @@
                             }
                             return chenilleMOTIFS();
 
-                        case "chenillardBackToBackEvolution" :
+                        case "chenillardBackToBackEvolution" : // Une à une, les LEDs s'allument jusqu'à être toutes allumées puis s'éteignent jusqu'à être toutes éteintes et ainsi de suite
+                            if(toLeft == true){
+                                tabLeds[ledIndice].src = "images/led-orange";
+                            }
                             /*i_LEDs_On += 1;
                             if(i_LEDs_On <= 4 + ledIndiceAtPreciseMoment){
                                 if(toLeft == true){
@@ -289,8 +292,8 @@
                             return chenilleMOTIFS();
                     
                         case "allumageAleatoire" : 
-                            ledIndice = Math.floor(Math.random() * 4);
-                            var rand = Math.floor(Math.random() * 2);
+                            ledIndice = Math.floor(Math.random() * 4); // numéro de LED aléatoire
+                            var rand = Math.floor(Math.random() * 2); // 1 chance sur 2 de s'allumer ou de s'éteindre
                             if(rand == 0){
                                 tabLeds[ledIndice].src = "images/led-orange";
                             } else {
@@ -298,10 +301,10 @@
                             }
                             return chenilleMOTIFS();
                         
-                        case "parityQuinconce" :
+                        case "parityQuinconce" : // les LEDs paires sont allumées et les impaires éteintes, puis l'inverse et ainsi de suite
                             var i = 0;
-                            if(parity == true){
-                                while(i < tabLeds.length){
+                            if(parity == true){ // changement à chaque rappel de la fonction, donc 1 coup sur 2
+                                while(i < tabLeds.length){ 
                                     if(i%2 == 0){
                                         tabLeds[i].src = "images/led-orange";
                                     } else{
@@ -309,6 +312,7 @@
                                     }
                                     i = i + 1;
                                 }
+                            // while et if implémentables avec un éventuel tableau de LEDs de n éléments
                             } else {
                                 while(i < tabLeds.length){
                                     if(i%2 == 0){
@@ -320,17 +324,17 @@
                                 }
                             }
                             if(parity == true){ parity = false;}
-                            else{ parity = true; }
+                            else{ parity = true; } // changement d'état pour la prochaine boucle
                             return chenilleMOTIFS();
 
-                        case "everyLEDsOn" :
+                        case "everyLEDsOn" : // toutes les LEDs s'allument puis toutes les LEDs s'éteignent
                             if(lights_On == true){
                                 tabLeds.forEach(elem_led => elem_led.src = "images/led-orange");
                             } else{
                                 reset_leds();
                             }
                             if(lights_On == true){lights_On = false;}
-                            else{lights_On = true;}
+                            else{lights_On = true;} // changement d'état pour la prochaine boucle
                             return chenilleMOTIFS();
                     }
                 })
