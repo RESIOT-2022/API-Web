@@ -50,35 +50,37 @@
 </head>
 
 <body>
-    <div id="ProgressBar2"></div>
+    <div id="ProgressBar2"></div> 
+
+    <!-- Tous les éléments présents seront centrés sur la page -->
     <div class="center_div">
         <p style="margin-top: 10px;">Click on to change states !</p>
 
-        <table>
+        <!-- tableau de LEDs // 4 selon maquette KNX-->
+        <table> 
             <tr>
                 <td><img id="led1" class="led" src="images/led-blue"></td>
                 <td><img id="led2" class="led" src="images/led-blue"></td>
                 <td><img id="led3" class="led" src="images/led-blue"></td>
                 <td><img id="led4" class="led" src="images/led-blue"></td>
-                <td><img id="led5" class="led" src="images/led-blue"></td>
             </tr>
         </table>
 
+        <!-- Slider lié à la vitesse du chenillard -->
         <input type="range" min="0" max ="100" value="50" id="slider">
 
-       
         <div id="SelectBtn"></div>
-        
         <div id="SelectValue"></div>
 
-        <p>Slide to change speed !</p>
-        <div id="PowerOff"></div>
+        <p>Here is the speed !</p>
+        
+        <!-- Boutons pour gérer le chenillard // 4 selons la maquette KNX -->
         <table id="tab_motif">
             <tr>
-                <td id="btnStartChen" class="motif">Démarer Chenillard</td>
-                <td id="btnChangeChen" class="motif">Changer sens</td>
-                <td id="btnLEDsAleatoires" class="motif">Mode Aléatoire</td>
-                <td id="btnColorAlea" class="motif">Couleurs aléatoires</td>
+                <td id="btnChenillard" class="motif">Lancer chenillard</td>
+                <td id="btnVitesseMoins" class="motif">Ralentir</td>
+                <td id="btnVitessePlus" class="motif">Accélérer</td>
+                <td id="btnMotifs" class="motif">Changer de motif</td>
             </tr>
         </table>
     </div>   
@@ -88,40 +90,168 @@
             console.log(slider.value);
         }
 
-        function sleep (time) { // sleep ms
-            return new Promise((resolve) => setTimeout(resolve, time));
-        }
-
-        var slider = document.getElementById("slider");
-        var SelectBtn = document.getElementById("SelectBtn");
-        var SelectValue = document.getElementById("SelectValue");
-        var PowerOff = document.getElementById("PowerOff");
-        var ProgressBar2 = document.getElementById("ProgressBar2");
-
-        var chenille_On;
-        var leftToRight;
-        var ledIndice;
-        var startingChenille;
-        var alea;
-        var colorAlea;
-        var minSpeedChenille = 2000; // 2000 ms
-        var maxSpeedChenille = 50; // 50 ms
-
         var led1 = document.getElementById("led1");
         var led2 = document.getElementById("led2");
         var led3 = document.getElementById("led3");
         var led4 = document.getElementById("led4");
-        var led5 = document.getElementById("led5");
-        var tabLeds = [led1, led2, led3, led4, led5]        
+        var tabLeds = [led1, led2, led3, led4];
+
         var initialisation = true
 
-        var btnstartChen = document.getElementById('btnStartChen')
-        var btnChangeChen = document.getElementById('btnChangeChen')
-        var btnLEDsAleatoires = document.getElementById('btnLEDsAleatoires')
-        var btnColorAlea = document.getElementById('btnColorAlea')
+        var btnChenillard = document.getElementById("btnChenillard");
+        var btnVitesseMoins = document.getElementById("btnVitesseMoins");
+        var btnVitessePlus = document.getElementById("btnVitessePlus");
+        var btnMotifs = document.getElementById("btnMotifs");
+
+        var slider = document.getElementById("slider");
+        var SelectBtn = document.getElementById("SelectBtn");
+        var SelectValue = document.getElementById("SelectValue");
+        var ProgressBar2 = document.getElementById("ProgressBar2");
+
+        var chenille_On = false; // variable liée à la mise en marche du chenillard
+
+        var ledIndice = 0; // variable qui servira à définir l'indice des LEDs à allumer
+
+        var minSpeed = 50; // 50 ms - Au plus rapide, il s'écoulera un intervalle de 50 ms entre 2 étapes du chenillard
+        var intervalSpeed = 100; // 100 ms // interval de temps entre les différentes vitesses
+        var intChangingSpeed = 10; // allant de 0 à 10.
+        slider.value = intChangingSpeed*5;
+        var actualSpeed = 50 + slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
         
+        var numMotif = 0; // variable liée au choix du motif du chenillard
+
         SelectValue.innerHTML = slider.value;
         ProgressBar2.style.width = slider.value + "%";
+
+
+        function sleep (time) { // sleep ms
+            return new Promise((resolve) => setTimeout(resolve, time));
+        }
+
+        function reset_leds(){ //remet toutes les LEDs en bleu
+            tabLeds.forEach(elem_led => elem_led.src = "images/led-blue") //remet toutes les LEDs à l'état initial = bleu
+        }
+
+        // function chenille(){
+        //     if(chenille_On == true){ // on vérifie que l'on veuille qu'il tourne (selon les clicks sur btnChenillard)
+        //         sleep(actualSpeed).then(() => { //max speed = 50 ms / min speed = 2000 ms / fonction affine
+        //             reset_leds();
+        //             tabLeds[ledIndice].src = "images/led-orange";
+        //             ledIndice += 1;
+        //             if(ledIndice > 3){
+        //                 ledIndice = 0;
+        //             }
+        //             return chenille();
+        //         })
+        //     }
+        //     else;
+        // }
+
+        btnChenillard.onclick = function(){
+            if(chenille_On == true){ // le chenillard tourne : on veut l'arrêter et modifier la page en conséquence
+                btnChenillard.innerHTML = "Arrêter chenillard"
+                chenille_On = false;
+            } else { // le chenillard ne tourne pas : on veut lancer le chenillard et modifier la page en conséquence
+                btnChenillard.innerHTML = "Lancer chenillard"
+                chenille_On = true;
+                //chenille(); // lancement du chenillard simple
+                chenilleMOTIFS(); // lancement du chenillard avec choix du motif
+            }
+        }
+
+        btnVitessePlus.onclick = function(){ // on augmente la vitesse du chenillard
+            if(chenille_On == true){ // prise en charge de la modification seulement si chenillard actif (choix personnel)
+                if(intChangingSpeed < 18){ 
+                    intChangingSpeed += 2;
+                } else if(intChangingSpeed < 20){
+                    intChangingSpeed += 1; // placer l'intervalle 95% entre 90% et 100% pour éviter un trop grand saut de vitesse
+                } else;
+                slider.value = 5*intChangingSpeed;
+                actualSpeed = 1050 - slider.value*10;
+                actualizeSlider(); // mettre à jour le front
+            }
+            
+        }
+
+        btnVitesseMoins.onclick = function(){ // on diminue la vitesse du chenillard
+            if(chenille_On == true){ //modification seulement si chenillard actif (choix personnel)
+                if(intChangingSpeed > 18){
+                    intChangingSpeed -= 1; // placer l'intervalle 95% entre 90% et 100% pour éviter un trop grand saut de vitesse
+                } else if(intChangingSpeed > 0){
+                    intChangingSpeed -= 2;
+                } else;
+                slider.value = 5*intChangingSpeed;
+                actualSpeed = 1050 - slider.value*10;
+                actualizeSlider(); // mettre à jour le front
+            }
+            
+        }
+
+        function actualizeSlider(){ // mettre à jour le front des slides bars
+            SelectValue.innerHTML = slider.value;
+            let position = 0.45 *slider.value +26 
+            SelectBtn.style.left = position + "%"
+            SelectValue.style.left = position + "%"
+            ProgressBar2.style.width = slider.value + "%";
+        }
+
+        btnMotifs.onclick = function(){ // on change de motif de chenillard
+            if(chenille_On == true){ // modification seulement si chenillard actif (choix personnel)
+                numMotif += 1;
+                if(numMotif > 2){ // en fonction du nombre de motifs qui ont été implémenté
+                    numMotif = 0;
+                }
+            } 
+        }
+
+        function decideMotif(){
+            switch(numMotif){
+                case 0 :
+                    return "chenillardSimple";
+                case 1 :
+                    return "chenillardInverse";
+                case 2 :
+                    return "allumageAleatoire";
+                /*case 3 :
+                    return "";
+                case 4 :
+                    return "";*/
+            }
+        }
+
+        /* Fonction recursive responsable du chenillard et de tous ses modes */
+        function chenilleMOTIFS(){
+            if(chenille_On == true){ // on vérifie que l'on veuille qu'il tourne (selon les clicks sur btnChenillard)
+                sleep(actualSpeed).then(() => { //max speed = 50 ms / min speed = 1050 ms / fonction affine pour la vitesse
+                    switch(decideMotif()){
+                        case "chenillardSimple" :
+                            reset_leds();
+                            tabLeds[ledIndice].src = "images/led-orange";
+                            ledIndice += 1;
+                            if(ledIndice > 3){
+                                ledIndice = 0;
+                            }
+                            return chenilleMOTIFS();
+
+                        case "chenillardInverse" :
+                            reset_leds();
+                            tabLeds[ledIndice].src = "images/led-orange";
+                            ledIndice -= 1;
+                            if(ledIndice < 0){
+                                ledIndice = 3;
+                            }
+                            return chenilleMOTIFS();
+                    
+                        case "allumageAleatoire" : 
+                            reset_leds();
+                            ledIndice = Math.floor(Math.random() * 4);
+                            tabLeds[ledIndice].src = "images/led-orange";
+                            return chenilleMOTIFS();
+                    }
+                })
+            }
+            else;
+        }
 
         function init(){
             let position = 0.45 *slider.value +26 
@@ -130,7 +260,7 @@
             initialisation = false
         }
 
-        slider.oninput = function(){
+        /*slider.oninput = function(){
             //slider.style.left = slider.value + "%";
             SelectValue.innerHTML = slider.value;
             ProgressBar2.style.width = slider.value + "%";
@@ -138,43 +268,39 @@
             let position = 0.45 *slider.value +26 
             SelectBtn.style.left = position + "%"
             SelectValue.style.left = position + "%"
-        }
+        }*/
 
-        function randomLED(){
-            return Math.floor(Math.random() * 5);
-        }
+        // function randomLED(){
+        //     return Math.floor(Math.random() * 5);
+        // }
 
-        function colorLED(ledIndice){
-            switch(ledIndice){
-                case 0 : 
-                    return "images/led-orange";
-                case 1 : 
-                    return "images/led-red";
-                case 2 : 
-                    return "images/led-yellow";
-                case 3 : 
-                    return "images/led-green";
-            }
-        }
+        // function colorLED(ledIndice){
+        //     switch(ledIndice){
+        //         case 0 : 
+        //             return "images/led-orange";
+        //         case 1 : 
+        //             return "images/led-red";
+        //         case 2 : 
+        //             return "images/led-yellow";
+        //         case 3 : 
+        //             return "images/led-green";
+        //     }
+        // }
 
-        function reset_leds(){
-            tabLeds.forEach(elem_led => elem_led.src = "images/led-blue") //remet toutes les LEDs à l'état initial = bleu
-        }
+        
 
         function reset_chenille(){
             reset_leds();
             chenille_On = false;
-            ledIndice = 0;
-            startingChenille = false;
-            alea = false;
-            colorAlea = false;
+            ledIndice = 0; // remettre à 0 ?
+            numMotif = 0; // remettre à 0 ?
+            // startingChenille = false;
+            // alea = false;
+            // colorAlea = false;
         }
 
-        PowerOff.onclick = function(){
-            reset_chenille();
-        }
 
-        btnstartChen.onclick = function(){
+        /*btnstartChen.onclick = function(){
             reset_chenille();
             chenille_On = true;
             ledIndice = 0;
@@ -248,13 +374,13 @@
                     } else {
                         if(leftToRight == true){
                             ledIndice += 1;
-                            if(ledIndice > 4){
+                            if(ledIndice > 3){
                                 ledIndice = 0;
                             }
                         } else {
                             ledIndice -= 1;
                             if(ledIndice < 0){
-                                ledIndice = 4;
+                                ledIndice = 3;
                             }
                         }
                     }
@@ -262,7 +388,7 @@
                 }
                 else; // si chenille_On == false // pas de chenillard;
             })
-        }
+        }*/
 
         var initialisation = true
         function installEventsOnMyFuckingTable(){
@@ -281,11 +407,11 @@
                     }
                     let elem = i + 1
                     switch(document.getElementById("led"+elem).src){
-                        case "http://a6fa-148-60-99-14.ngrok.io/images/led-orange" :
+                        case "http://0f2f-79-83-33-99.ngrok.io/images/led-orange" :
                             document.getElementById("led"+elem).src = "images/led-blue"   
                             socket.send(JSON.stringify({led: elem, state: "blue", message: "Led " + elem + " éteinte", action: "change-state"}))                    
                         break
-                        case "http://a6fa-148-60-99-14.ngrok.io/images/led-blue" :
+                        case "http://0f2f-79-83-33-99.ngrok.io/images/led-blue" :
                             document.getElementById("led"+elem).src = "images/led-orange"                      
                             socket.send(JSON.stringify({led: elem, state: "orange", message: "Led " + elem + " allumée", action: "change-state"}))
                         break
