@@ -10,7 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "async-exit-hook": "^2.0.1",
     "express": "^4.17.3",
+    "knx": "^2.5.2",
+    "knx-ip": "^0.1.15",
     "nedb": "^1.8.0",
     "ws": "^8.5.0"
   },
