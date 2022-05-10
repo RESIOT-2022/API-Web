@@ -193,7 +193,12 @@
 
         btnMotifs.onclick = function(){ // on change de motif de chenillard
             if(chenille_On == true){ // modification seulement si chenillard actif (choix personnel)
-                numMotif += 1;
+                if(numMotif == 2){ // juste car un motif n'est pas encore implémenté
+                    numMotif += 2;
+                } else {
+                    numMotif += 1;
+                }
+                // numMotif += 1;
                 if(numMotif > 6){ // en fonction du nombre de motifs qui ont été implémenté
                     numMotif = 0;
                     ledIndice = 0; // redémarrer le chenillard à la 1ère LED quand on recommence le parcours des motifs
@@ -211,9 +216,9 @@
                     return "chenillardInverse";             // oxxx | xxxo | xxox | xoxx | oxxx | xxxo | xxox | xoxx | oxxx
                 case 2 :
                     return "chenillardBackToBack";          // oxxx | xoxx | xxox | xxxo | xxox | xoxx | oxxx | xoxx | xxox
-                case 3 :
-                    ledIndiceAtPreciseMoment = ledIndice;   // xxox | xoox | ooox | oooo | oooo | oooo | oooo | xooo | xxoo
-                    return "chenillardBackToBackEvolution"; // xxxo | oxxo | ooxo | oooo | ooox | ooxx | oxxx | xxxx | oxxx
+                // case 3 :
+                //     ledIndiceAtPreciseMoment = ledIndice;   // xxox | xoox | ooox | oooo | oooo | oooo | oooo | xooo | xxoo
+                //     return "chenillardBackToBackEvolution"; // xxxo | oxxo | ooxo | oooo | ooox | ooxx | oxxx | xxxx | oxxx
                 case 4 :
                     return "allumageAleatoire";             // oxxx | oxxo | oxoo | xxoo | oxoo | oxxo | xxxo | xxoo | xxox
                 case 5 :
