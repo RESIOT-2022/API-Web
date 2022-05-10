@@ -1,5 +1,4 @@
 var knx = require('knx');
-
 const exitHook = require('async-exit-hook');
 
 var connection = new knx.Connection( {
@@ -27,17 +26,19 @@ var connection = new knx.Connection( {
       connected: function() {
         console.log('Hurray, I can talk KNX!');
         // WRITE an arbitrary boolean request to a DPT1 group address
-        //connection.write("0/0/4", 1);
+        connection.write("0/0/2", 1);
         
-        var light = new knx.Devices.BinarySwitch({ga: '0/0/2', status_ga: '0/1/2'}, connection);
-        console.log("The current light status is %j", light.status.current_value);
-        light.control.on('change', function(oldvalue, newvalue) {
-        console.log("**** LIGHT control changed from: %j to: %j", oldvalue, newvalue);
+        connection.read("0/1/2", (src, responsevalue) => {
+          console.log("src : %s | response : %j", src, responsevalue)
         });
-        light.status.on('change', function(oldvalue, newvalue) {
-        console.log("**** LIGHT status changed from: %j to: %j", oldvalue, newvalue);
+
+        connection.read("1/0/2", (src, responsevalue) => {
+          if(responsevalue.data == [0]){
+            console.log("Led 2 éteinte par le bouton")
+          }
+          console.log("src : %s | response : %j", src, responsevalue)
         });
-        light.switchOn(); // or switchOff();
+        
       },
       // get notified for all KNX events:
       event: function(evt, src, dest, value) { 
@@ -51,15 +52,25 @@ var connection = new knx.Connection( {
   });
 
   connection.Connect()
-  connection.Disconnect(()=>{
-    exitHook(cb => {
-        console.log('Disconnecting from KNX…');
-        connection.Disconnect(() => {
-          console.log('Disconnected from KNX');
-          cb();
-        });
-      });
-  })
+
+  /*
+  var light = new knx.Devices.BinarySwitch({ga: '0/0/2', status_ga: '0/1/2'}, connection);
+  console.log("The current light status is %j", light.status.current_value);
+  light.control.on('change', function(oldvalue, newvalue) {
+    console.log("**** LIGHT control changed from: %j to: %j", oldvalue, newvalue);
+  });
+  light.status.on('change', function(oldvalue, newvalue) {
+    console.log("**** LIGHT status changed from: %j to: %j", oldvalue, newvalue);
+  });
+  light.switchOn(); // or switchOff();
+*/
+  exitHook(cb => {
+    console.log('Disconnecting from KNX…');
+    connection.Disconnect(() => {
+      console.log('Disconnected from KNX');
+      cb();
+    });
+  });
 
 // var light = new knx.Devices.BinarySwitch({ga: '0/0/4', status_ga: '0/1/4'}, connection);
 // console.log("The current light status is %j", light.status.current_value);

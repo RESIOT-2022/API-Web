@@ -185,7 +185,7 @@
 
         function actualizeSlider(){ // mettre à jour le front des slides bars
             SelectValue.innerHTML = slider.value;
-            let position = 0.45 *slider.value +26 
+            let position = 0.45 *slider.value +26   // fonction affine du slider pour afficher le curseur au bon endroit sur la barre en focntion de la vitesse du chenillard
             SelectBtn.style.left = position + "%"
             SelectValue.style.left = position + "%"
             ProgressBar2.style.width = slider.value + "%";
@@ -378,7 +378,7 @@
         }
 
         function init(){
-            let position = 0.45 *slider.value +26 
+            let position = 0.45 *slider.value +26
             SelectBtn.style.left = position + "%"
             SelectValue.style.left = position + "%"
             initialisation = false
@@ -494,11 +494,11 @@
                     }
                     let elem = i + 1
                     switch(document.getElementById("led"+elem).src){
-                        case "http://7e3e-148-60-99-14.ngrok.io//images/led-orange" :
+                        case "https://7da1-37-167-107-231.eu.ngrok.io/images/led-orange" :
                             document.getElementById("led"+elem).src = "images/led-blue"   
                             socket.send(JSON.stringify({led: elem, state: "blue", message: "Led " + elem + " éteinte", action: "change-state"}))                    
                         break
-                        case "http://7e3e-148-60-99-14.ngrok.io//images/led-blue" :
+                        case "https://7da1-37-167-107-231.eu.ngrok.io/images/led-blue" :
                             document.getElementById("led"+elem).src = "images/led-orange"                      
                             socket.send(JSON.stringify({led: elem, state: "orange", message: "Led " + elem + " allumée", action: "change-state"}))
                         break
