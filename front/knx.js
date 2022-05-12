@@ -13,6 +13,7 @@ function led_toggle(indice, state_led){
 }
 
 
+var lightOn = false
 var connection = new knx.Connection( {
     // ip address and port of the KNX router or interface
     ipAddr: '192.168.0.202', ipPort: 3671,
@@ -38,19 +39,11 @@ var connection = new knx.Connection( {
       connected: function() {
         console.log('Hurray, I can talk KNX!');
         // WRITE an arbitrary boolean request to a DPT1 group address
-        connection.write("0/0/2", 1);
+        connection.write("0/0/2", 0);
         
         connection.read("0/1/2", (src, responsevalue) => {
           console.log("src : %s | response : %j", src, responsevalue)
-        });
-
-        connection.read("1/0/2", (src, responsevalue) => {
-          if(responsevalue.data == [0]){
-            console.log("Led 2 éteinte par le bouton")
-          }
-          console.log("src : %s | response : %j", src, responsevalue)
-        });
-        
+        });  
       },
       // get notified for all KNX events:
       event: function(evt, src, dest, value) { 
@@ -88,7 +81,10 @@ var connection = new knx.Connection( {
 
   connection.Connect()
 
-
+  function toggle(led){
+    lightOn = !lightOn
+    connection.write("0/0/" + led, lightOn);
+  }
   /*
   var light = new knx.Devices.BinarySwitch({ga: '0/0/2', status_ga: '0/1/2'}, connection);
   console.log("The current light status is %j", light.status.current_value);
