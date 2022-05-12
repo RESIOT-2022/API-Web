@@ -1,9 +1,21 @@
 var knx = require('knx');
 const exitHook = require('async-exit-hook');
+var state_led1 = false;
+var state_led2 = false;
+var state_led3 = false;
+var state_led4 = false;
+
+function led_toggle(indice, state_led){
+  console.log("avant toggle", state_led);
+  state_led = !state_led;
+  console.log("apres toggle", state_led);
+  connection.write("0/0/"+indice, state_led);
+}
+
 
 var connection = new knx.Connection( {
     // ip address and port of the KNX router or interface
-    ipAddr: '192.168.0.201', ipPort: 3671,
+    ipAddr: '192.168.0.202', ipPort: 3671,
     // in case you need to specify the multicast interface (say if you have more than one)
     // interface: 'eth0',
     // the KNX physical address we'd like to use
@@ -43,6 +55,29 @@ var connection = new knx.Connection( {
       // get notified for all KNX events:
       event: function(evt, src, dest, value) { 
           console.log("event: %s, src: %j, dest: %j, value: %j", evt, src, dest, value);
+          var responseString = JSON.stringify(value);
+          var response = JSON.parse(responseString).data[0];
+          bp_or_led = dest.split("/")[0]; // = 1 : BP | = 0 : LED
+          get_or_set_led = dest.split("/")[1]; // = 1 | get_led | = 0 : set_led
+          indice = dest.split("/")[2];
+          console.log("event ?")
+          if(response == 0){
+            console.log("reponse == 0")
+            console.log(typeof indice);
+            switch(indice){
+              
+              case "1" : led_toggle(indice, state_led1); console.log(indice);break;
+  // l'etat du booleen n'est modifié que dans la fonction et n'est donc pas pris en compte en dehors
+              case "2" : led_toggle(indice, state_led2); break;
+  
+              case "3" : led_toggle(indice, state_led3); break;
+  
+              case "4" : led_toggle(indice, state_led4); break;
+  
+              default : break;
+            }
+          }
+          
       },
       // get notified on connection errors
       error: function(connstatus) {
@@ -52,6 +87,7 @@ var connection = new knx.Connection( {
   });
 
   connection.Connect()
+
 
   /*
   var light = new knx.Devices.BinarySwitch({ga: '0/0/2', status_ga: '0/1/2'}, connection);
