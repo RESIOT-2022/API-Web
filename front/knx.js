@@ -1,5 +1,17 @@
 var knx = require('knx');
 const exitHook = require('async-exit-hook');
+var state_led1 = false;
+var state_led2 = false;
+var state_led3 = false;
+var state_led4 = false;
+
+function led_toggle(indice, state_led){
+  console.log("avant toggle", state_led);
+  state_led = !state_led;
+  console.log("apres toggle", state_led);
+  connection.write("0/0/"+indice, state_led);
+}
+
 
 var lightOn = [false, false, false, false] // états des LEDs à l'état initial
 var numLed
@@ -39,70 +51,29 @@ var connection = new knx.Connection( {
       // get notified for all KNX events:
       event: function(evt, src, dest, value) { 
           console.log("event: %s, src: %j, dest: %j, value: %j", evt, src, dest, value);
-
-          var responseString = JSON.stringify(value) // value est un Buffer donc on le stringify
-          var response = JSON.parse(responseString).data[0] // puis on le parse pour voir l'état du paramètre
-          
-          
-          numLed = dest.split("/")[2] // récupération du numéro de LED
-          // var appuiBP = "1/0/" + numLed
-
-          if (dest == "1/0/1" && response == 0) { // test si on a appuyé sur le bouton puis relaché
-            //toggle(numLed)  // changement d'état de la led
-            if(!chenillardOn){
-              chenillardOn = true
-              numLed = 1
-              console.log("chenillard appelé")
+          var responseString = JSON.stringify(value);
+          var response = JSON.parse(responseString).data[0];
+          bp_or_led = dest.split("/")[0]; // = 1 : BP | = 0 : LED
+          get_or_set_led = dest.split("/")[1]; // = 1 | get_led | = 0 : set_led
+          indice = dest.split("/")[2];
+          console.log("event ?")
+          if(response == 0){
+            console.log("reponse == 0")
+            console.log(typeof indice);
+            switch(indice){
               
-            }else{
-              chenillardOn = false
-              //clearInterval(chenillard)
-              reset_leds()
-              console.log("stop interval")
+              case "1" : led_toggle(indice, state_led1); console.log(indice);break;
+  // l'etat du booleen n'est modifié que dans la fonction et n'est donc pas pris en compte en dehors
+              case "2" : led_toggle(indice, state_led2); break;
+  
+              case "3" : led_toggle(indice, state_led3); break;
+  
+              case "4" : led_toggle(indice, state_led4); break;
+  
+              default : break;
             }
           }
-
-          var state = dest.split('/')[1]
-          if(chenillardOn && response == 0){ // on agit en fonction de l'état de la led
-            reset_leds()
-            sleep(vitesse).then(chenillard())
-          }
-          sleep(vitesse)
-          .then(reset_leds())
-          .then(chenillard())
-
-          if(dest == "1/0/2" && response == 0){
-
-            vitesse -= 100
-            if(vitesse < 100){
-              vitesse = 100
-            }
-            
-            console.log("vitesse : " + vitesse)
-          }
-
-          if(dest == "1/0/3" && response == 0){
-            vitesse += 100
-            if(vitesse > 1100){
-              vitesse = 1100
-            }
-            
-            console.log("vitesse : " + vitesse)
-          }
-
-          // setInterval(() => {
-          //   reset_leds();
-          //   [ledIndice].src = "images/led-orange";
-          //   ledIndice += 1;
-          //   if(ledIndice > 3){ // > tabLeds.length -1
-          //       ledIndice = 0;
-          //   }
-          //   return chenilleMOTIFS();
-          // })
-
-          // connection.read("0/1/2", (src, responsevalue) => {
-          //   console.log("src : %s | response : %j", src, responsevalue)
-          // }); 
+          
       },
       // get notified on connection errors
       error: function(connstatus) {

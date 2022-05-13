@@ -494,11 +494,11 @@
                     }
                     let elem = i + 1
                     switch(document.getElementById("led"+elem).src){
-                        case "https://7da1-37-167-107-231.eu.ngrok.io/images/led-orange" :
+                        case "http://localhost:3000/images/led-orange" :
                             document.getElementById("led"+elem).src = "images/led-blue"   
                             socket.send(JSON.stringify({led: elem, state: "blue", message: "Led " + elem + " éteinte", action: "change-state"}))                    
                         break
-                        case "https://7da1-37-167-107-231.eu.ngrok.io/images/led-blue" :
+                        case "http://localhost:3000/images/led-blue" :
                             document.getElementById("led"+elem).src = "images/led-orange"                      
                             socket.send(JSON.stringify({led: elem, state: "orange", message: "Led " + elem + " allumée", action: "change-state"}))
                         break

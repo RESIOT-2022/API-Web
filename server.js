@@ -51,7 +51,12 @@ wss.on('connection', (ws) => {
 //Read html
 app.get('/', (req, res) => {
     res.set('Content-Type', 'text/html')
-    res.sendFile(`${__dirname}/front/index3.html`)
+    res.sendFile(`${__dirname}/front/fusion.html`)
+})
+
+app.get('/fusion', (req, res) => {
+    res.set('Content-Type', 'text/javascript')
+    res.sendFile(`${__dirname}/front/fusion.js`)
 })
 
 /*app.get('/images/led-off', (req, res) => {
