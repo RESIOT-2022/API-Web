@@ -1,191 +1,19 @@
-/*###################################################################################
-###############             MISE EN PLACE DES WEBSOCKETS            ################# 
-###################################################################################*/
-//Create WebSocket connection
-const socket = new WebSocket('ws://localhost:3000')
-
-//Connection opened
-socket.addEventListener('open', (event) => {
-    socket.send(JSON.stringify({message : 'hello server!!'}))
-})
-
-//Listen for messages
-socket.addEventListener('message', (event) => {
-    //le message envoyé par le serveur doit être un JSON
-    console.log(typeof event.data)
-    console.log(event.data)
-    let message = JSON.parse(event.data)
-    console.log(typeof message)
-    console.log(message)
-    switch(message.action){
-        case "hello":
-            console.log('Message from server : ' + message.message)
-        break
-        case "change-state":    // Changer l'état de la LED
-            let elem = message.led 
-            if(message.state == 'orange'){
-                document.getElementById("led"+elem).src = "images/led-orange"   
-            }else{
-                document.getElementById("led"+elem).src = "images/led-blue"                      
-            }
-            console.log('Message from server : ' + message.message)
-        break
-    }
-    
-
-})
-
-const sendMessage = () => {
-    socket.send('Hello from client')
-}
-
-/*###################################################################################
-###############                 MISE EN PLACE DU KNX                ################# 
-###################################################################################*/
-var knx = require('knx');
-const exitHook = require('async-exit-hook');
-
-var connection = new knx.Connection( {
-    // ip address and port of the KNX router or interface
-    ipAddr: '192.168.0.202', ipPort: 3671,
-    // in case you need to specify the multicast interface (say if you have more than one)
-    // interface: 'eth0',
-    // the KNX physical address we'd like to use
-    physAddr: '15.15.15',
-    // set the log level for messsages printed on the console. This can be 'error', 'warn', 'info' (default), 'debug', or 'trace'.
-    loglevel: 'info',
-    // do not automatically connect, but use connection.Connect() to establish connection
-    // manualConnect: true,  
-    // use tunneling with multicast (router) - this is NOT supported by all routers! See README-resilience.md
-    forceTunneling: true,
-    // wait at least 10 millisec between each datagram
-    minimumDelay: 10,
-    // enable this option to suppress the acknowledge flag with outgoing L_Data.req requests. LoxOne needs this
-    suppress_ack_ldatareq: false,
-    // 14/03/2020 In tunneling mode, echoes the sent message by emitting a new emitEvent, so other object with same group address, can receive the sent message. Default is false.
-    localEchoInTunneling:false,
-    // define your event handlers here:
-    handlers: {
-      // wait for connection establishment before sending anything!
-      connected: function() {
-        console.log('Hurray, I can talk KNX!');
-        // WRITE an arbitrary boolean request to a DPT1 group address
-        connection.write("0/0/2", 1); // mise à 1 de la LED2
-        
-        connection.read("0/1/2", (src, responsevalue) => { //lecture de l'état de la LED2 ?
-          console.log("src : %s | response : %j", src, responsevalue)
-        });
-
-        connection.read("1/0/2", (src, responsevalue) => {
-          if(responsevalue.data == [0]){ // si on appui sur le bouton
-            console.log("Led 2 éteinte par le bouton")
-          }
-          console.log("src : %s | response : %j", src, responsevalue)
-        });
-        
-      },
-      // get notified for all KNX events:
-      event: function(evt, src, dest, value) { 
-          console.log("event: %s, src: %j, dest: %j, value: %j", evt, src, dest, value); // affichage des éléments 
-          var responseString = JSON.stringify(value);
-          var response = JSON.parse(responseString).data[0]; // 0 ou 1 // appui ou relachement des boutons
-          bp_or_led = dest.split("/")[0]; // = 1 : BP | = 0 : LED
-          get_or_set_led = dest.split("/")[1]; // = 1 | get_led | = 0 : set_led
-          indice = dest.split("/")[2];
-          console.log("event ?")
-          if(response == 0){
-            console.log("reponse == 0")
-            console.log(typeof indice);
-            switch(indice){
-              
-              case "1" : handleChenillard();break;
-              // l'etat du booleen n'est modifié que dans la fonction et n'est donc pas pris en compte en dehors
-
-              case "2" : diminuerVitesse(); break;
-  
-              case "3" : augmenterVitesse(); break;
-  
-              case "4" : changeMotif(); break;
-  
-              default : break;
-            }
-          }
-          
-      },
-      // get notified on connection errors
-      error: function(connstatus) {
-        console.log("**** ERROR: %j", connstatus);
-      }
-    }
-  });
-
-  connection.Connect()
-
-
-  /*
-  var light = new knx.Devices.BinarySwitch({ga: '0/0/2', status_ga: '0/1/2'}, connection);
-  console.log("The current light status is %j", light.status.current_value);
-  light.control.on('change', function(oldvalue, newvalue) {
-    console.log("**** LIGHT control changed from: %j to: %j", oldvalue, newvalue);
-  });
-  light.status.on('change', function(oldvalue, newvalue) {
-    console.log("**** LIGHT status changed from: %j to: %j", oldvalue, newvalue);
-  });
-  light.switchOn(); // or switchOff();
-*/
-  exitHook(cb => {
-    console.log('Disconnecting from KNX…');
-    connection.Disconnect(() => {
-      console.log('Disconnected from KNX');
-      cb();
-    });
-  });
-
-// var light = new knx.Devices.BinarySwitch({ga: '0/0/4', status_ga: '0/1/4'}, connection);
-// console.log("The current light status is %j", light.status.current_value);
-// light.control.on('change', function(oldvalue, newvalue) {
-//   console.log("**** LIGHT control changed from: %j to: %j", oldvalue, newvalue);
-// });
-// light.status.on('change', function(oldvalue, newvalue) {
-//   console.log("**** LIGHT status changed from: %j to: %j", oldvalue, newvalue);
-// });
-// light.switchOn(); // or switchOff();
-
-/*###################################################################################
-##########              INITIALISATION DES VARIABLES GLOBALES             ########### 
-###################################################################################*/
-var p = document.getElementById("p");
-
-var led1 = document.getElementById("led1");
-var led2 = document.getElementById("led2");
-var led3 = document.getElementById("led3");
-var led4 = document.getElementById("led4");
-var tabLeds = [led1, led2, led3, led4]; // tableau des LEDs
-
-var initialisation = true
-
-var btnChenillard = document.getElementById("btnChenillard");
-var btnVitesseMoins = document.getElementById("btnVitesseMoins");
-var btnVitessePlus = document.getElementById("btnVitessePlus");
-var btnMotifs = document.getElementById("btnMotifs"); // boutons poussoirs
-
-var slider = document.getElementById("slider");
-var SelectBtn = document.getElementById("SelectBtn");
-var SelectValue = document.getElementById("SelectValue");
-var ProgressBar2 = document.getElementById("ProgressBar2");
-
+//VARIABLES GLOBALES COMMUNES, IDENTIQUES A CELLES COTE SERVEUR
 var chenille_On = false; // variable liée à la mise en marche du chenillard
 var startingChenille = true; // savoir si c'est le premier lancement du chenillard pour traitemet spécifique pour palier à un comportement inexpliqué
 
-var ledIndice = 0; // variable qui servira à définir l'indice des LEDs à allumer
+var ledIndice = 1; // variable qui servira à définir l'indice des LEDs à allumer
+var ledIndicePrevious = 0;
 
 var minSpeed = 100; // 50 ms - Au plus rapide, il s'écoulera un intervalle de 50 ms entre 2 étapes du chenillard
 var intervalSpeed = 100; // 100 ms // interval de temps entre les différentes vitesses
 var intChangingSpeed = 5; // allant de 0 à 10.
-slider.value = intChangingSpeed*10;
-var actualSpeed = minSpeed + slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
+//slider.value = intChangingSpeed*10;
+var actualSpeed = minSpeed + intChangingSpeed*100//slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
 
 var numMotif = 0; // variable liée au choix du motif du chenillard
+
+var changing_motif = false;
 
 // VARIABLES LIEES AUX DIFFERENTS MOTIFS
 var toLeft = true; // used in motif 'BackToBack' and more | true car il intervient après le chenillard inversé
@@ -196,20 +24,165 @@ var ledIndiceAtPreciseMoment; // indice de la led lorsqu'on passe en motif 'Back
 var parity = true; // used in motif 'parityQuinconce'
 var lights_On = true; // used in motif 'everyLEDsOn'
 
-SelectValue.innerHTML = slider.value;
-ProgressBar2.style.width = slider.value + "%";
+var led1 = document.getElementById("led1");
+var led2 = document.getElementById("led2");
+var led3 = document.getElementById("led3");
+var led4 = document.getElementById("led4");
+var tabLeds = [led1, led2, led3, led4];
 
-function led_toggle(indice, state_led){
-    console.log("avant toggle", state_led);
-    state_led = !state_led;
-    console.log("apres toggle", state_led);
-    connection.write("0/0/"+indice, state_led);
-  }
+//var initialisation = true
 
-window.onload = function () {
-    installEventsOnMyFuckingTable();
-    console.log(slider.value);
+var btnChenillard = document.getElementById("btnChenillard");
+var btnVitesseMoins = document.getElementById("btnVitesseMoins");
+var btnVitessePlus = document.getElementById("btnVitessePlus");
+var btnMotifs = document.getElementById("btnMotifs");
+
+var slider = document.getElementById("slider");
+var SelectBtn = document.getElementById("SelectBtn");
+var SelectValue = document.getElementById("SelectValue");
+var ProgressBar2 = document.getElementById("ProgressBar2");
+
+
+/*###################################################################################
+###############             MISE EN PLACE DES WEBSOCKETS            ################# 
+###################################################################################*/
+//Create WebSocket connection
+const socket = new WebSocket('ws://localhost:3000')
+
+//Connection opened
+socket.addEventListener('open', (event) => {
+    socket.send(JSON.stringify({message : 'connection'}))
+})
+
+//Listen for messages
+socket.addEventListener('message', (event) => {
+    //le message envoyé par le serveur doit être un JSON
+    console.log(typeof event.data)
+    console.log(event.data)
+    let message = JSON.parse(event.data)
+    console.log(message)
+    console.log(message.action);
+    switch(message.action){
+        case "recuperation des donnees":
+            chenille_On = message.chenille_On;
+            ledIndice = message.ledIndice;
+            ledIndicePrevious = message.ledIndicePrevious;
+            numMotif = message.numMotif;
+            actualSpeed = message.actualSpeed;
+            toLeft = message.toLeft;
+            parity = message.parity;
+            lights_On = message.lights_On;
+            actualizeSlider();
+            break
+        case "handleChenillard()":    // Changer l'état de la LED
+            chenille_On = message.chenille_On;
+            chenilleMOTIFS();
+            break
+        case "diminuerVitesse()":
+            actualSpeed = message.actualSpeed;
+            //diminuerVitesse();
+            actualizeSlider();
+            break;
+        case "augmenterVitesse()":
+            actualSpeed = message.actualSpeed;
+            //augmenterVitesse();
+            actualizeSlider();
+            break;
+        case "changeMotif()":
+            numMotif = message.numMotif;
+            ledIndice = message.ledIndice;
+            ledIndicePrevious = message.ledIndicePrevious;
+            changing_motif = message.changing_motif;
+            //changeMotif();
+            //decideMotif();
+        default:
+            break;
+    }
+})
+
+const sendMessage = () => {
+    socket.send('Hello from client')
 }
+
+function actualizeSlider(){ // mettre à jour le front des slides bars
+    SelectValue.innerHTML = slider.value;
+    let position = 0.45 *slider.value +26   // fonction affine du slider pour afficher le curseur au bon endroit sur la barre en focntion de la vitesse du chenillard
+    SelectBtn.style.left = position + "%"
+    SelectValue.style.left = position + "%"
+    ProgressBar2.style.width = slider.value + "%";
+}
+
+
+
+// // var light = new knx.Devices.BinarySwitch({ga: '0/0/4', status_ga: '0/1/4'}, connection);
+// // console.log("The current light status is %j", light.status.current_value);
+// // light.control.on('change', function(oldvalue, newvalue) {
+// //   console.log("**** LIGHT control changed from: %j to: %j", oldvalue, newvalue);
+// // });
+// // light.status.on('change', function(oldvalue, newvalue) {
+// //   console.log("**** LIGHT status changed from: %j to: %j", oldvalue, newvalue);
+// // });
+// // light.switchOn(); // or switchOff();
+
+// /*###################################################################################
+// ##########              INITIALISATION DES VARIABLES GLOBALES             ########### 
+// ###################################################################################*/
+// /*var p = document.getElementById("p");
+
+// var led1 = document.getElementById("led1");
+// var led2 = document.getElementById("led2");
+// var led3 = document.getElementById("led3");
+// var led4 = document.getElementById("led4");
+// var tabLeds = [led1, led2, led3, led4]; // tableau des LEDs
+
+// var initialisation = true
+
+// var btnChenillard = document.getElementById("btnChenillard");
+// var btnVitesseMoins = document.getElementById("btnVitesseMoins");
+// var btnVitessePlus = document.getElementById("btnVitessePlus");
+// var btnMotifs = document.getElementById("btnMotifs"); // boutons poussoirs
+
+// var slider = document.getElementById("slider");
+// var SelectBtn = document.getElementById("SelectBtn");
+// var SelectValue = document.getElementById("SelectValue");
+// var ProgressBar2 = document.getElementById("ProgressBar2");
+
+// var chenille_On = false; // variable liée à la mise en marche du chenillard
+// var startingChenille = true; // savoir si c'est le premier lancement du chenillard pour traitemet spécifique pour palier à un comportement inexpliqué
+
+// var ledIndice = 0; // variable qui servira à définir l'indice des LEDs à allumer
+
+// var minSpeed = 100; // 50 ms - Au plus rapide, il s'écoulera un intervalle de 50 ms entre 2 étapes du chenillard
+// var intervalSpeed = 100; // 100 ms // interval de temps entre les différentes vitesses
+// var intChangingSpeed = 5; // allant de 0 à 10.
+// slider.value = intChangingSpeed*10;
+// var actualSpeed = minSpeed + slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
+
+// var numMotif = 0; // variable liée au choix du motif du chenillard
+
+// // VARIABLES LIEES AUX DIFFERENTS MOTIFS
+// var toLeft = true; // used in motif 'BackToBack' and more | true car il intervient après le chenillard inversé
+// var regime_stationnaire = false; // Savoir si le motif 'BackToBackEvolution' a atteint son fonctionnement normal
+// var ind_regime_stat = 0; // combien de boucle on a effectué depuis le motif 'BackToBackEvolution'
+// var nb_for_regime_stat; // combien de boucle faut-il pour etre stationnaire ?
+// var ledIndiceAtPreciseMoment; // indice de la led lorsqu'on passe en motif 'BackToBackEvolution'
+// var parity = true; // used in motif 'parityQuinconce'
+// var lights_On = true; // used in motif 'everyLEDsOn'
+
+// SelectValue.innerHTML = slider.value;
+// ProgressBar2.style.width = slider.value + "%";
+
+// function led_toggle(indice, state_led){
+//     console.log("avant toggle", state_led);
+//     state_led = !state_led;
+//     console.log("apres toggle", state_led);
+//     connection.write("0/0/"+indice, state_led);
+//   }
+
+// window.onload = function () {
+//     installEventsOnMyFuckingTable();
+//     console.log(slider.value);
+// }
 
 function sleep (time) { // sleep ms
     return new Promise((resolve) => setTimeout(resolve, time));
@@ -230,9 +203,9 @@ function handleChenillard(){
         chenilleMOTIFS(); // lancement du chenillard avec choix du motif
     }
 }
-btnChenillard.onclick = function(){
-    handleChenillard();
-}
+// btnChenillard.onclick = function(){
+//     handleChenillard();
+// }
 
 function augmenterVitesse(){
     if(chenille_On == true){ // prise en charge de la modification seulement si chenillard actif (choix personnel)
@@ -246,9 +219,9 @@ function augmenterVitesse(){
         actualizeSlider(); // mettre à jour le front
     }
 }
-btnVitessePlus.onclick = function(){ // on augmente la vitesse du chenillard
-    augmenterVitesse();
-}
+// btnVitessePlus.onclick = function(){ // on augmente la vitesse du chenillard
+//     augmenterVitesse();
+// }
 function diminuerVitesse(){
     if(chenille_On == true){ //modification seulement si chenillard actif (choix personnel)
         /*if(intChangingSpeed > 18){
@@ -264,17 +237,17 @@ function diminuerVitesse(){
         actualizeSlider(); // mettre à jour le front
     }
 }
-btnVitesseMoins.onclick = function(){ // on diminue la vitesse du chenillard
-    diminuerVitesse();
-}
+// btnVitesseMoins.onclick = function(){ // on diminue la vitesse du chenillard
+//     diminuerVitesse();
+// }
 
-function actualizeSlider(){ // mettre à jour le front des slides bars
-    SelectValue.innerHTML = slider.value;
-    let position = 0.45 *slider.value +26   // fonction affine du slider pour afficher le curseur au bon endroit sur la barre en focntion de la vitesse du chenillard
-    SelectBtn.style.left = position + "%"
-    SelectValue.style.left = position + "%"
-    ProgressBar2.style.width = slider.value + "%";
-}
+// function actualizeSlider(){ // mettre à jour le front des slides bars
+//     SelectValue.innerHTML = slider.value;
+//     let position = 0.45 *slider.value +26   // fonction affine du slider pour afficher le curseur au bon endroit sur la barre en focntion de la vitesse du chenillard
+//     SelectBtn.style.left = position + "%"
+//     SelectValue.style.left = position + "%"
+//     ProgressBar2.style.width = slider.value + "%";
+// }
 
 function changeMotif(){
     if(chenille_On == true){ // modification seulement si chenillard actif (choix personnel)
@@ -293,9 +266,9 @@ function changeMotif(){
     } 
 }
 
-btnMotifs.onclick = function(){ // on change de motif de chenillard
-    changeMotif();
-}
+// btnMotifs.onclick = function(){ // on change de motif de chenillard
+//     changeMotif();
+// }
 
 function decideMotif(){
     switch(numMotif){
@@ -317,7 +290,7 @@ function decideMotif(){
     }
 }
 
-/* Fonction recursive responsable du chenillard et de tous ses modes */
+// /* Fonction recursive responsable du chenillard et de tous ses modes */
 function chenilleMOTIFS(){
     p.innerHTML = `indice de led : ${ledIndice} | indice precis : ${ledIndiceAtPreciseMoment} | regime stationnaire : ${regime_stationnaire}\n indice regime stat : ${ind_regime_stat} | nb for regime stat : ${nb_for_regime_stat}`;
     if(chenille_On == true){ // on vérifie que l'on veuille qu'il tourne (selon les clicks sur btnChenillard)
@@ -466,135 +439,135 @@ function chenilleMOTIFS(){
     else;
 }
 
-function init(){
-    let position = 0.45 *slider.value +26
-    SelectBtn.style.left = position + "%"
-    SelectValue.style.left = position + "%"
-    initialisation = false
-}
-
-/*slider.oninput = function(){ // Activation ou non de la slide bar par click
-    //slider.style.left = slider.value + "%";
-    SelectValue.innerHTML = slider.value;
-    ProgressBar2.style.width = slider.value + "%";
-    SelectBtn.style.position = slider.style.position
-    let position = 0.45 *slider.value +26 
-    SelectBtn.style.left = position + "%"
-    SelectValue.style.left = position + "%"
-}*/
-
-// function randomLED(){ // choisir l'indice de led aléatoirement
-//     return Math.floor(Math.random() * 4);
+// function init(){
+//     let position = 0.45 *slider.value +26
+//     SelectBtn.style.left = position + "%"
+//     SelectValue.style.left = position + "%"
+//     initialisation = false
 // }
 
-// function colorLED(ledIndice){ // choisir la couleur d'une led aléatoirement
-//     switch(ledIndice){
-//         case 0 : 
-//             return "images/led-orange";
-//         case 1 : 
-//             return "images/led-red";
-//         case 2 : 
-//             return "images/led-yellow";
-//         case 3 : 
-//             return "images/led-green";
+// /*slider.oninput = function(){ // Activation ou non de la slide bar par click
+//     //slider.style.left = slider.value + "%";
+//     SelectValue.innerHTML = slider.value;
+//     ProgressBar2.style.width = slider.value + "%";
+//     SelectBtn.style.position = slider.style.position
+//     let position = 0.45 *slider.value +26 
+//     SelectBtn.style.left = position + "%"
+//     SelectValue.style.left = position + "%"
+// }*/
+
+// // function randomLED(){ // choisir l'indice de led aléatoirement
+// //     return Math.floor(Math.random() * 4);
+// // }
+
+// // function colorLED(ledIndice){ // choisir la couleur d'une led aléatoirement
+// //     switch(ledIndice){
+// //         case 0 : 
+// //             return "images/led-orange";
+// //         case 1 : 
+// //             return "images/led-red";
+// //         case 2 : 
+// //             return "images/led-yellow";
+// //         case 3 : 
+// //             return "images/led-green";
+// //     }
+// // }
+
+// function reset_chenille(){ // NE SERT QU'UNE FOIS, CHANGEABLE NON ?
+//     reset_leds();
+//     chenille_On = false;
+//     ledIndice = 0; // remettre à 0 ?
+//     numMotif = 0; // remettre à 0 ?
+//     // startingChenille = false;
+//     // alea = false;
+//     // colorAlea = false;
+// }
+
+// /*
+// //MON ESSAI DE CHENILLARD / RECURSIVITE
+// function chenille(){
+//     if(startingChenille){ // partie de code un peu sale pour gérer une bizarrerie à la 1ère incrémentation au lancement
+//         reset_leds();
+//         if(colorAlea == true){
+//             tabLeds[ledIndice].src = colorLED(Math.floor(Math.random() * 4));
+//         } else {
+//             tabLeds[ledIndice].src = "images/led-orange";// = 0 si leftToRight, 4 si rightToLeft, <=4 et >=0 si aleatoire
+//         }
+//         if(alea == true){
+//             ledIndice = randomLED();
+//             //ledIndice = Math.floor(Math.random() * 4);
+//         } else {
+//             if(leftToRight == true){
+//                 ledIndice +=1;
+//             } else {
+//                 ledIndice -=1;
+//             }
+//         }
+//         startingChenille = false;
+//         var start = new Date().getTime();
+//         while (new Date().getTime() < start + 500);
 //     }
-// }
-
-function reset_chenille(){ // NE SERT QU'UNE FOIS, CHANGEABLE NON ?
-    reset_leds();
-    chenille_On = false;
-    ledIndice = 0; // remettre à 0 ?
-    numMotif = 0; // remettre à 0 ?
-    // startingChenille = false;
-    // alea = false;
-    // colorAlea = false;
-}
-
-/*
-//MON ESSAI DE CHENILLARD / RECURSIVITE
-function chenille(){
-    if(startingChenille){ // partie de code un peu sale pour gérer une bizarrerie à la 1ère incrémentation au lancement
-        reset_leds();
-        if(colorAlea == true){
-            tabLeds[ledIndice].src = colorLED(Math.floor(Math.random() * 4));
-        } else {
-            tabLeds[ledIndice].src = "images/led-orange";// = 0 si leftToRight, 4 si rightToLeft, <=4 et >=0 si aleatoire
-        }
-        if(alea == true){
-            ledIndice = randomLED();
-            //ledIndice = Math.floor(Math.random() * 4);
-        } else {
-            if(leftToRight == true){
-                ledIndice +=1;
-            } else {
-                ledIndice -=1;
-            }
-        }
-        startingChenille = false;
-        var start = new Date().getTime();
-        while (new Date().getTime() < start + 500);
-    }
-    //motif4.innerHTML = ledIndice;
-    sleep(((maxSpeedChenille-minSpeedChenille)/100)*slider.value + 2000).then(() => { //max speed = 50 ms / min speed = 2000 ms / fonction affine
-        if(chenille_On == true){
+//     //motif4.innerHTML = ledIndice;
+//     sleep(((maxSpeedChenille-minSpeedChenille)/100)*slider.value + 2000).then(() => { //max speed = 50 ms / min speed = 2000 ms / fonction affine
+//         if(chenille_On == true){
             
-            if(colorAlea == true){
-                tabLeds[ledIndice].src = colorLED(Math.floor(Math.random() * 4));
-            } else {
-                reset_leds();
-                tabLeds[ledIndice].src = "images/led-orange";// = 0 si leftToRight, 4 si rightToLeft, <=4 et >=0 si aleatoire
-            }
-            if(alea == true){
-                ledIndice = randomLED();
-                //ledIndice = Math.floor(Math.random() * 4);
-            } else {
-                if(leftToRight == true){
-                    ledIndice += 1;
-                    if(ledIndice > 3){
-                        ledIndice = 0;
-                    }
-                } else {
-                    ledIndice -= 1;
-                    if(ledIndice < 0){
-                        ledIndice = 3;
-                    }
-                }
-            }
-            return chenille();
-        }
-        else; // si chenille_On == false // pas de chenillard;
-    })
-}*/
+//             if(colorAlea == true){
+//                 tabLeds[ledIndice].src = colorLED(Math.floor(Math.random() * 4));
+//             } else {
+//                 reset_leds();
+//                 tabLeds[ledIndice].src = "images/led-orange";// = 0 si leftToRight, 4 si rightToLeft, <=4 et >=0 si aleatoire
+//             }
+//             if(alea == true){
+//                 ledIndice = randomLED();
+//                 //ledIndice = Math.floor(Math.random() * 4);
+//             } else {
+//                 if(leftToRight == true){
+//                     ledIndice += 1;
+//                     if(ledIndice > 3){
+//                         ledIndice = 0;
+//                     }
+//                 } else {
+//                     ledIndice -= 1;
+//                     if(ledIndice < 0){
+//                         ledIndice = 3;
+//                     }
+//                 }
+//             }
+//             return chenille();
+//         }
+//         else; // si chenille_On == false // pas de chenillard;
+//     })
+// }*/
 
-var initialisation = true
-function installEventsOnMyFuckingTable(){
-    if(initialisation){
-        init()
-    }
+// var initialisation = true
+// function installEventsOnMyFuckingTable(){
+//     if(initialisation){
+//         init()
+//     }
 
-    var table = document.getElementsByTagName('table')[0]; // ou getElementById()
-    var tbody = table.getElementsByTagName('tbody')[0];
-    var _td = tbody.getElementsByTagName('td');
+//     var table = document.getElementsByTagName('table')[0]; // ou getElementById()
+//     var tbody = table.getElementsByTagName('tbody')[0];
+//     var _td = tbody.getElementsByTagName('td');
  
-    for (let i=0 ; i<_td.length ; i++) {
-        _td[i].onclick = () => {
-            if(chenille_On == true){
-                reset_chenille();
-            }
-            let elem = i + 1
-            switch(document.getElementById("led"+elem).src){
-                case "http://localhost:3000/images/led-orange" :
-                    document.getElementById("led"+elem).src = "images/led-blue"   
-                    socket.send(JSON.stringify({led: elem, state: "blue", message: "Led " + elem + " éteinte", action: "change-state"}))                    
-                break
-                case "http://localhost:3000/images/led-blue" :
-                    document.getElementById("led"+elem).src = "images/led-orange"                      
-                    socket.send(JSON.stringify({led: elem, state: "orange", message: "Led " + elem + " allumée", action: "change-state"}))
-                break
-                default :
-                    document.getElementById("led"+elem).src = "images/led-blue"
-                    socket.send(JSON.stringify({led: elem, state: "blue", message: "Led " + elem + " éteinte", action: "change-state"}))
-            }
-        }
-    }
-} 
+//     for (let i=0 ; i<_td.length ; i++) {
+//         _td[i].onclick = () => {
+//             if(chenille_On == true){
+//                 reset_chenille();
+//             }
+//             let elem = i + 1
+//             switch(document.getElementById("led"+elem).src){
+//                 case "http://localhost:3000/images/led-orange" :
+//                     document.getElementById("led"+elem).src = "images/led-blue"   
+//                     socket.send(JSON.stringify({led: elem, state: "blue", message: "Led " + elem + " éteinte", action: "change-state"}))                    
+//                 break
+//                 case "http://localhost:3000/images/led-blue" :
+//                     document.getElementById("led"+elem).src = "images/led-orange"                      
+//                     socket.send(JSON.stringify({led: elem, state: "orange", message: "Led " + elem + " allumée", action: "change-state"}))
+//                 break
+//                 default :
+//                     document.getElementById("led"+elem).src = "images/led-blue"
+//                     socket.send(JSON.stringify({led: elem, state: "blue", message: "Led " + elem + " éteinte", action: "change-state"}))
+//             }
+//         }
+//     }
+// } 
