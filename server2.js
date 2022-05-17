@@ -287,7 +287,6 @@ var connection = new knx.Connection( {
             }
           }
 
-          // IL FAUT CHANGER LA REQUETE COTE CLIENT (fusion.html)
           app.get('/changeState', (req, res) => {
               if(state == "1" && response == 0){
                     res.set('Content-Type', 'image/png')
