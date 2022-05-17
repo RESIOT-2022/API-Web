@@ -1,7 +1,7 @@
-const { Socket } = require('dgram')
+//const { Socket } = require('dgram')
 const express = require('express')
 const app = express() //Start Express
-const DataStore =require('nedb')
+//const DataStore =require('nedb')
 const path =require('path')
 const WebSocket = require('ws')
 const server = require('http').createServer(app)
@@ -11,8 +11,8 @@ const exitHook = require('async-exit-hook');
 const res = require('express/lib/response')
 
 //BDD
-const db = new DataStore({filename: 'led'})
-db.loadDatabase()
+//const db = new DataStore({filename: 'led'})
+//db.loadDatabase()
 
 //data format : JSON
 app.use(express.json())
@@ -25,9 +25,9 @@ var startingChenille = true; // savoir si c'est le premier lancement du chenilla
 var ledIndice = 1; // variable qui servira à définir l'indice des LEDs à allumer
 var ledIndicePrevious = 0;
 
-var minSpeed = 100; // 50 ms - Au plus rapide, il s'écoulera un intervalle de 50 ms entre 2 étapes du chenillard
+var minSpeed = 300; // 300 ms - Au plus rapide, il s'écoulera un intervalle de 300 ms entre 2 étapes du chenillard
 var intervalSpeed = 100; // 100 ms // interval de temps entre les différentes vitesses
-var intChangingSpeed = 5; // allant de 0 à 10.
+var intChangingSpeed = 4; // allant de 0 à 8.
 //slider.value = intChangingSpeed*10;
 var actualSpeed = minSpeed + intChangingSpeed*100//slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
 
@@ -133,6 +133,40 @@ app.get('/images/poweroff', (req, res) => {
 })
 //route vers l'image puis dans le code de la page dire où aller chercher l'image
 
+app.get('/btnChenillard', (req, res) => {
+    console.log("le client a chenillé !")
+    handleChenillard();
+    wss.clients.forEach(client => {
+        client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On}))
+    })
+})
+
+app.get('/btnVitesseMoins', (req, res) => {
+    console.log("le client augmente la vitesse ")
+    diminuerVitesse()
+    wss.clients.forEach(client => {
+        client.send(JSON.stringify({action: "diminuerVitesse()", actualSpeed : actualSpeed}))
+    })
+})
+
+app.get('/btnVitessePlus', (req, res) => {
+    console.log("le client diminue la vitesse ")
+    augmenterVitesse()
+    wss.clients.forEach(client => {
+        client.send(JSON.stringify({action: "augmenterVitesse()", actualSpeed : actualSpeed}))
+    })
+})
+
+app.get('/btnMotifs', (req, res) => {
+    console.log("le client change de motif ")
+    changeMotif()
+    wss.clients.forEach(client => {
+        client.send(JSON.stringify({action: "changeMotif()", numMotif : numMotif, ledIndice : ledIndice, ledIndicePrevious : ledIndicePrevious, changing_motif : changing_motif}))
+    })
+})
+
+
+
 // //API CRUD
 
 //Create
@@ -213,7 +247,7 @@ function led_toggle(indice, state_led){
 
 var connection = new knx.Connection( {
     // ip address and port of the KNX router or interface
-    ipAddr: '192.168.0.201', ipPort: 3671,
+    ipAddr: '192.168.0.202', ipPort: 3671,
     // in case you need to specify the multicast interface (say if you have more than one)
     // interface: 'eth0',
     // the KNX physical address we'd like to use
@@ -255,7 +289,7 @@ var connection = new knx.Connection( {
                     handleChenillard();
                     // On active ou arrête le chenillard ! Seul le booléen nous intéresse ?? Etat des leds ??
                     wss.clients.forEach(client => {
-                        client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On}))
+                        client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On, ledIndice : ledIndice}))
                     })
                     break;
 
@@ -287,20 +321,16 @@ var connection = new knx.Connection( {
             }
           }
 
-          app.get('/changeState', (req, res) => {
-              if(state == "1" && response == 0){
-                    res.set('Content-Type', 'image/png')
-                    res.sendFile(`${__dirname}/front/images/led_icon_blue.png`)
-                
-              }else if(state == "1" && response == 1){
-                    res.set('Content-Type', 'image/png')
-                    res.sendFile(`${__dirname}/front/images/led_icon_orange.png`)
-                
-              }else {
-                    res.set('Content-Type', 'image/png')
-                    res.sendFile(`${__dirname}/front/images/led_icon_red.png`)
-              }
-          })
+          
+          
+            if(state == "1" && response == 0){
+                wss.clients.forEach(client => {
+                    client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On, ledIndice : ledIndice}))
+                })
+            
+            }else if(state == "1" && response == 1){
+            
+            }
           
           
       },
@@ -358,8 +388,9 @@ function handleChenillard(){
 function augmenterVitesse(){
     console.log("On a appuyé sur le bouton augmenter vitesse")
     if(chenille_On == true){ // prise en charge de la modification seulement si chenillard actif (choix personnel)
-        if(intChangingSpeed < 10){ 
-            intChangingSpeed += 1;
+        intChangingSpeed -= 1;
+        if(intChangingSpeed < 0){ 
+            intChangingSpeed = 0;
         } /*else if(intChangingSpeed < 20){
             intChangingSpeed += 1; // placer l'intervalle 95% entre 90% et 100% pour éviter un trop grand saut de vitesse
         } else;*/
@@ -378,8 +409,9 @@ function diminuerVitesse(){
         } else if(intChangingSpeed > 0){
             intChangingSpeed -= 2;
         } else;*/
-        if(intChangingSpeed > 0){
-            intChangingSpeed -= 1;
+        intChangingSpeed += 1;
+        if(intChangingSpeed > 8){
+            intChangingSpeed = 8;
         }
         //slider.value = 10*intChangingSpeed;
         //actualSpeed = 1100 - slider.value*10;
@@ -398,11 +430,13 @@ function changeMotif(){
         }
         // numMotif += 1;
         if(numMotif > 6){ // en fonction du nombre de motifs qui ont été implémenté
-            numMotif = 0;
+            numMotif = 0; // on redémarre le parcours des motifs
             ledIndice = 1; // redémarrer le chenillard à la 1ère LED quand on recommence le parcours des motifs
-            ledIndicePrevious = 0;
-            ind_regime_stat = 0;
-            regime_stationnaire = false; // raz des variables utiles pour le motif 4
+            ledIndicePrevious = 0; // used in multiple motifs
+            // ind_regime_stat = 0;
+            // regime_stationnaire = false; // both used in motif 4
+            parity = true; // used in motif 5
+            lights_On = true; // used in motif6
         }
         changing_motif = true;
     } 
@@ -561,27 +595,26 @@ function chenilleMOTIFS(){
                     return chenilleMOTIFS();
                 
                 case "parityQuinconce" : // les LEDs paires sont allumées et les impaires éteintes, puis l'inverse et ainsi de suite
-                    var i = 1;
                     if(parity == true){ // changement à chaque rappel de la fonction, donc 1 coup sur 2
                         //while(i < tabLeds.length){ 
-                        connection.write("0/1/"+ledIndice, 1);
-                        connection.write("0/2/"+ledIndice, 0);
-                        connection.write("0/3/"+ledIndice, 1);
-                        connection.write("0/4/"+ledIndice, 0);
+                        connection.write("0/0/1", 1);
+                        connection.write("0/0/2", 0);
+                        connection.write("0/0/3", 1);
+                        connection.write("0/0/4", 0);
                     } else {
-                        connection.write("0/1/"+ledIndice, 0);
-                        connection.write("0/2/"+ledIndice, 1);
-                        connection.write("0/3/"+ledIndice, 0);
-                        connection.write("0/4/"+ledIndice, 1);
+                        connection.write("0/0/1", 0);
+                        connection.write("0/0/2", 1);
+                        connection.write("0/0/3", 0);
+                        connection.write("0/0/4", 1);
                     }
                     parity = !parity; // changement d'état pour la prochaine boucle
                     return chenilleMOTIFS();
 
                 case "everyLEDsOn" : // toutes les LEDs s'allument puis toutes les LEDs s'éteignent
-                    if(changing_motif == true){
+                    /*if(changing_motif == true){
                         lights_On = true;
                         changing_motif = false;
-                    }
+                    }*/
                     if(lights_On == true){
                         //tabLeds.forEach(elem_led => elem_led.src = "images/led-orange");
                         connection.write("0/0/1", 1);
