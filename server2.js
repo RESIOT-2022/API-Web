@@ -132,6 +132,36 @@ app.get('/images/poweroff', (req, res) => {
 })
 //route vers l'image puis dans le code de la page dire où aller chercher l'image
 
+app.get('/btnChenillard', (req, res) => {
+    console.log("le client a chenillé !")
+    wss.clients.forEach(client => {
+        client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On}))
+    })
+})
+
+app.get('/btnVitesseMoins', (req, res) => {
+    console.log("le client augmente la vitesse ")
+    wss.clients.forEach(client => {
+        client.send(JSON.stringify({action: "diminuerVitesse()", actualSpeed : actualSpeed}))
+    })
+})
+
+app.get('/btnVitessePlus', (req, res) => {
+    console.log("le client diminue la vitesse ")
+    wss.clients.forEach(client => {
+        client.send(JSON.stringify({action: "augmenterVitesse()", actualSpeed : actualSpeed}))
+    })
+})
+
+app.get('/btnMotifs', (req, res) => {
+    console.log("le client change de motif ")
+    wss.clients.forEach(client => {
+        client.send(JSON.stringify({action: "changeMotif()", numMotif : numMotif, ledIndice : ledIndice, ledIndicePrevious : ledIndicePrevious, changing_motif : changing_motif}))
+    })
+})
+
+
+
 // //API CRUD
 
 //Create
@@ -379,11 +409,13 @@ function changeMotif(){
         }
         // numMotif += 1;
         if(numMotif > 6){ // en fonction du nombre de motifs qui ont été implémenté
-            numMotif = 0;
+            numMotif = 0; // on redémarre le parcours des motifs
             ledIndice = 1; // redémarrer le chenillard à la 1ère LED quand on recommence le parcours des motifs
-            ledIndicePrevious = 0;
-            ind_regime_stat = 0;
-            regime_stationnaire = false; // raz des variables utiles pour le motif 4
+            ledIndicePrevious = 0; // used in multiple motifs
+            // ind_regime_stat = 0;
+            // regime_stationnaire = false; // both used in motif 4
+            parity = true; // used in motif 5
+            lights_On = true; // used in motif6
         }
         changing_motif = true;
     } 
@@ -542,27 +574,26 @@ function chenilleMOTIFS(){
                     return chenilleMOTIFS();
                 
                 case "parityQuinconce" : // les LEDs paires sont allumées et les impaires éteintes, puis l'inverse et ainsi de suite
-                    var i = 1;
                     if(parity == true){ // changement à chaque rappel de la fonction, donc 1 coup sur 2
                         //while(i < tabLeds.length){ 
-                        connection.write("0/1/"+ledIndice, 1);
-                        connection.write("0/2/"+ledIndice, 0);
-                        connection.write("0/3/"+ledIndice, 1);
-                        connection.write("0/4/"+ledIndice, 0);
+                        connection.write("0/0/1", 1);
+                        connection.write("0/0/2", 0);
+                        connection.write("0/0/3", 1);
+                        connection.write("0/0/4", 0);
                     } else {
-                        connection.write("0/1/"+ledIndice, 0);
-                        connection.write("0/2/"+ledIndice, 1);
-                        connection.write("0/3/"+ledIndice, 0);
-                        connection.write("0/4/"+ledIndice, 1);
+                        connection.write("0/0/1", 0);
+                        connection.write("0/0/2", 1);
+                        connection.write("0/0/3", 0);
+                        connection.write("0/0/4", 1);
                     }
                     parity = !parity; // changement d'état pour la prochaine boucle
                     return chenilleMOTIFS();
 
                 case "everyLEDsOn" : // toutes les LEDs s'allument puis toutes les LEDs s'éteignent
-                    if(changing_motif == true){
+                    /*if(changing_motif == true){
                         lights_On = true;
                         changing_motif = false;
-                    }
+                    }*/
                     if(lights_On == true){
                         //tabLeds.forEach(elem_led => elem_led.src = "images/led-orange");
                         connection.write("0/0/1", 1);

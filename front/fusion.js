@@ -65,9 +65,13 @@ socket.addEventListener('message', (event) => {
     switch(message.action){
         case "recuperation des donnees":
             chenille_On = message.chenille_On;
-            ledIndice = message.ledIndice;
-            ledIndicePrevious = message.ledIndicePrevious;
+            ledIndice = message.ledIndice-1;
             numMotif = message.numMotif;
+            if(numMotif == 1){
+                ledIndicePrevious = message.ledIndicePrevious+1;
+            } else {
+                ledIndicePrevious = message.ledIndicePrevious-1;
+            }
             actualSpeed = message.actualSpeed;
             toLeft = message.toLeft;
             parity = message.parity;
@@ -105,15 +109,30 @@ const sendMessage = () => {
 }
 
 function actualizeSlider(){ // mettre à jour le front des slides bars
+    slider.value = (1100 - actualSpeed)/10
     SelectValue.innerHTML = slider.value;
     let position = 0.45 *slider.value +26   // fonction affine du slider pour afficher le curseur au bon endroit sur la barre en focntion de la vitesse du chenillard
     SelectBtn.style.left = position + "%"
     SelectValue.style.left = position + "%"
     ProgressBar2.style.width = slider.value + "%";
 }
+/*
+btnChenillard.onclick = function(){
 
+}
 
+btnVitesseMoins.onclick = function(){
 
+}
+
+btnVitessePlus.onclick = function(){
+
+}
+
+btnMotifs.onclick = function(){
+    
+}
+*/
 // // var light = new knx.Devices.BinarySwitch({ga: '0/0/4', status_ga: '0/1/4'}, connection);
 // // console.log("The current light status is %j", light.status.current_value);
 // // light.control.on('change', function(oldvalue, newvalue) {
