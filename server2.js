@@ -1,7 +1,7 @@
-const { Socket } = require('dgram')
+//const { Socket } = require('dgram')
 const express = require('express')
 const app = express() //Start Express
-const DataStore =require('nedb')
+//const DataStore =require('nedb')
 const path =require('path')
 const WebSocket = require('ws')
 const server = require('http').createServer(app)
@@ -10,8 +10,8 @@ var knx = require('knx');
 const exitHook = require('async-exit-hook');
 
 //BDD
-const db = new DataStore({filename: 'led'})
-db.loadDatabase()
+//const db = new DataStore({filename: 'led'})
+//db.loadDatabase()
 
 //data format : JSON
 app.use(express.json())
@@ -19,13 +19,13 @@ app.use(express.static('/pages'))
 
 //variables globales
 var chenille_On = false; // variable liée à la mise en marche du chenillard
-var startingChenille = true; // savoir si c'est le premier lancement du chenillard pour traitemet spécifique pour palier à un comportement inexpliqué
+//var startingChenille = true; // savoir si c'est le premier lancement du chenillard pour traitemet spécifique pour palier à un comportement inexpliqué
 
 var ledIndice = 1; // variable qui servira à définir l'indice des LEDs à allumer
 var ledIndicePrevious = 0;
 
 var minSpeed = 100; // 50 ms - Au plus rapide, il s'écoulera un intervalle de 50 ms entre 2 étapes du chenillard
-var intervalSpeed = 100; // 100 ms // interval de temps entre les différentes vitesses
+//var intervalSpeed = 100; // 100 ms // interval de temps entre les différentes vitesses
 var intChangingSpeed = 5; // allant de 0 à 10.
 //slider.value = intChangingSpeed*10;
 var actualSpeed = minSpeed + intChangingSpeed*100//slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
@@ -36,10 +36,10 @@ var changing_motif = false;
 
 // VARIABLES LIEES AUX DIFFERENTS MOTIFS
 var toLeft = true; // used in motif 'BackToBack' and more | true car il intervient après le chenillard inversé
-var regime_stationnaire = false; // Savoir si le motif 'BackToBackEvolution' a atteint son fonctionnement normal
-var ind_regime_stat = 0; // combien de boucle on a effectué depuis le motif 'BackToBackEvolution'
-var nb_for_regime_stat; // combien de boucle faut-il pour etre stationnaire ?
-var ledIndiceAtPreciseMoment; // indice de la led lorsqu'on passe en motif 'BackToBackEvolution'
+//var regime_stationnaire = false; // Savoir si le motif 'BackToBackEvolution' a atteint son fonctionnement normal
+//var ind_regime_stat = 0; // combien de boucle on a effectué depuis le motif 'BackToBackEvolution'
+//var nb_for_regime_stat; // combien de boucle faut-il pour etre stationnaire ?
+//var ledIndiceAtPreciseMoment; // indice de la led lorsqu'on passe en motif 'BackToBackEvolution'
 var parity = true; // used in motif 'parityQuinconce'
 var lights_On = true; // used in motif 'everyLEDsOn'
 
@@ -134,20 +134,28 @@ app.get('/images/poweroff', (req, res) => {
 
 app.get('/btnChenillard', (req, res) => {
     console.log("le client a chenillé !")
+    handleChenillard();
+    // On active ou arrête le chenillard ! Seul le booléen nous intéresse ?? Etat des leds ??
     wss.clients.forEach(client => {
-        client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On}))
+        client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On, ledIndice : ledIndice, ledIndicePrevious : ledIndicePrevious}))
     })
+    console.log("j'ai envoyé ma socket")
 })
 
 app.get('/btnVitesseMoins', (req, res) => {
     console.log("le client augmente la vitesse ")
-    wss.clients.forEach(client => {
+    diminuerVitesse();
+    // On diminue la vitesse du chenillard, seule la vitesse actuelle nous intéresse ?
+    /*wss.clients.forEach(client => {
         client.send(JSON.stringify({action: "diminuerVitesse()", actualSpeed : actualSpeed}))
-    })
+    })*/
+    console.log("j'ai envoyé ma socket")
 })
 
 app.get('/btnVitessePlus', (req, res) => {
     console.log("le client diminue la vitesse ")
+    augmenterVitesse(); 
+    // On augmente la vitesse du chenillard, seule la vitesse actuelle nous intéresse ?
     wss.clients.forEach(client => {
         client.send(JSON.stringify({action: "augmenterVitesse()", actualSpeed : actualSpeed}))
     })
@@ -155,12 +163,24 @@ app.get('/btnVitessePlus', (req, res) => {
 
 app.get('/btnMotifs', (req, res) => {
     console.log("le client change de motif ")
+    changeMotif(); 
+    // On change de motif, seul le numéro de motif nous intéresse ??
     wss.clients.forEach(client => {
         client.send(JSON.stringify({action: "changeMotif()", numMotif : numMotif, ledIndice : ledIndice, ledIndicePrevious : ledIndicePrevious, changing_motif : changing_motif}))
     })
 })
 
+/*app.post('/led1', (req, res) => {
+    console.log("le client a ppui")
+    res.set('Content-Type', 'text/javascript')
+    res.sendFile(`${__dirname}/front/fusion.js`)
+})
 
+app.get('/led1', (req, res) => {
+    console.log("led1 GETTTTTT")
+    res.set('Content-Type', 'text/javascript')
+    res.sendFile(`${__dirname}/front/fusion.js`)
+})*/
 
 // //API CRUD
 
@@ -232,12 +252,13 @@ module.exports = async() => {
     return contenu
 }
 */
-function led_toggle(indice, state_led){
+/*function led_toggle(indice, state_led){
   console.log("avant toggle", state_led);
   state_led = !state_led;
   console.log("apres toggle", state_led);
   connection.write("0/0/"+indice, state_led);
 }
+*/
 
 
 var connection = new knx.Connection( {
@@ -282,7 +303,7 @@ var connection = new knx.Connection( {
                     handleChenillard();
                     // On active ou arrête le chenillard ! Seul le booléen nous intéresse ?? Etat des leds ??
                     wss.clients.forEach(client => {
-                        client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On}))
+                        client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On, ledIndice : ledIndice, ledIndicePrevious : ledIndicePrevious}))
                     })
                     break;
 
@@ -366,7 +387,7 @@ function handleChenillard(){
     }
 }
 
-function augmenterVitesse(){
+function diminuerVitesse(){
     console.log("On a appuyé sur le bouton augmenter vitesse")
     if(chenille_On == true){ // prise en charge de la modification seulement si chenillard actif (choix personnel)
         if(intChangingSpeed < 10){ 
@@ -381,7 +402,7 @@ function augmenterVitesse(){
     }
 }
 
-function diminuerVitesse(){
+function augmenterVitesse(){
     console.log("On a appuyé sur le bouton diminuer vitesse")
     if(chenille_On == true){ //modification seulement si chenillard actif (choix personnel)
         /*if(intChangingSpeed > 18){
@@ -444,20 +465,23 @@ function decideMotif(){
 
 /* Fonction recursive responsable du chenillard et de tous ses modes */
 function chenilleMOTIFS(){
-    console.log("traitement du chenillard...")
+    //console.log("traitement du chenillard...")
     if(chenille_On == true){ // on vérifie que l'on veuille qu'il tourne (selon les clicks sur btnChenillard)
-        console.log("on attend entre chaque appel : ", actualSpeed)
+        //console.log("on attend entre chaque appel : ", actualSpeed)
         sleep(actualSpeed).then(() => { //max speed = 50 ms / min speed = 1050 ms / fonction affine pour la vitesse
             switch(decideMotif()){
                 case "chenillardSimple" : // Les LEDs s'allument une à une de gauche à droite
                     //reset_leds();
                     //tabLeds[ledIndice].src = "images/led-orange";
                     if(changing_motif == true && lights_On == false){ //si on recommence le chenillard classique et que les LEDs étaient à l'état allumé à la fin du motif 6
-                        reset_leds();                                 //on les éteint pour recommencer dans de bonnes conditions         
+                        reset_leds();  
+                        //console.log("resetled")                               //on les éteint pour recommencer dans de bonnes conditions         
                     }
                     if(ledIndicePrevious != 0){ 
                         connection.write("0/0/"+ledIndicePrevious, 0); //on éteint la led qui a été allumée au coup d'avant
+                        //console.log("0/0/0")
                     }
+                    //console.log("0/0/1")
                     connection.write("0/0/"+ledIndice, 1); //on allume la suivante
                     ledIndicePrevious = ledIndice; 
                     ledIndice += 1;

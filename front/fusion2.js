@@ -78,6 +78,7 @@ socket.addEventListener('message', (event) => {
             parity = message.parity;
             lights_On = message.lights_On;
             actualizeSlider();
+            chenilleMOTIFS();
             break
 
         case "handleChenillard()":    // Changer l'état de la LED

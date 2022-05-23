@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "watch": "nodemon server.js"
+    "start": "node server2.js",
+    "watch": "nodemon server2.js"
   },
   "author": "",
   "license": "ISC",
@@ -15,7 +15,8 @@
     "knx": "^2.5.2",
     "knx-ip": "^0.1.15",
     "nedb": "^1.8.0",
-    "ws": "^8.5.0"
+    "ws": "^8.5.0",
+    "xhr": "^2.6.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
