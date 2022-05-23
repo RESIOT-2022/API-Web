@@ -8,6 +8,7 @@ const server = require('http').createServer(app)
 const PORT = 3000
 var knx = require('knx');
 const exitHook = require('async-exit-hook');
+const res = require('express/lib/response')
 
 //BDD
 //const db = new DataStore({filename: 'led'})
@@ -24,9 +25,9 @@ var chenille_On = false; // variable liée à la mise en marche du chenillard
 var ledIndice = 1; // variable qui servira à définir l'indice des LEDs à allumer
 var ledIndicePrevious = 0;
 
-var minSpeed = 100; // 50 ms - Au plus rapide, il s'écoulera un intervalle de 50 ms entre 2 étapes du chenillard
-//var intervalSpeed = 100; // 100 ms // interval de temps entre les différentes vitesses
-var intChangingSpeed = 5; // allant de 0 à 10.
+var minSpeed = 300; // 300 ms - Au plus rapide, il s'écoulera un intervalle de 300 ms entre 2 étapes du chenillard
+var intervalSpeed = 100; // 100 ms // interval de temps entre les différentes vitesses
+var intChangingSpeed = 4; // allant de 0 à 8.
 //slider.value = intChangingSpeed*10;
 var actualSpeed = minSpeed + intChangingSpeed*100//slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
 
@@ -135,7 +136,6 @@ app.get('/images/poweroff', (req, res) => {
 app.get('/btnChenillard', (req, res) => {
     console.log("le client a chenillé !")
     handleChenillard();
-    // On active ou arrête le chenillard ! Seul le booléen nous intéresse ?? Etat des leds ??
     wss.clients.forEach(client => {
         client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On, ledIndice : ledIndice, ledIndicePrevious : ledIndicePrevious}))
     })
@@ -144,18 +144,16 @@ app.get('/btnChenillard', (req, res) => {
 
 app.get('/btnVitesseMoins', (req, res) => {
     console.log("le client augmente la vitesse ")
-    diminuerVitesse();
-    // On diminue la vitesse du chenillard, seule la vitesse actuelle nous intéresse ?
-    /*wss.clients.forEach(client => {
+    diminuerVitesse()
+    wss.clients.forEach(client => {
         client.send(JSON.stringify({action: "diminuerVitesse()", actualSpeed : actualSpeed}))
-    })*/
+    })
     console.log("j'ai envoyé ma socket")
 })
 
 app.get('/btnVitessePlus', (req, res) => {
     console.log("le client diminue la vitesse ")
-    augmenterVitesse(); 
-    // On augmente la vitesse du chenillard, seule la vitesse actuelle nous intéresse ?
+    augmenterVitesse()
     wss.clients.forEach(client => {
         client.send(JSON.stringify({action: "augmenterVitesse()", actualSpeed : actualSpeed}))
     })
@@ -163,8 +161,7 @@ app.get('/btnVitessePlus', (req, res) => {
 
 app.get('/btnMotifs', (req, res) => {
     console.log("le client change de motif ")
-    changeMotif(); 
-    // On change de motif, seul le numéro de motif nous intéresse ??
+    changeMotif()
     wss.clients.forEach(client => {
         client.send(JSON.stringify({action: "changeMotif()", numMotif : numMotif, ledIndice : ledIndice, ledIndicePrevious : ledIndicePrevious, changing_motif : changing_motif}))
     })
@@ -263,7 +260,7 @@ module.exports = async() => {
 
 var connection = new knx.Connection( {
     // ip address and port of the KNX router or interface
-    ipAddr: '192.168.0.201', ipPort: 3671,
+    ipAddr: '192.168.0.202', ipPort: 3671,
     // in case you need to specify the multicast interface (say if you have more than one)
     // interface: 'eth0',
     // the KNX physical address we'd like to use
@@ -294,6 +291,8 @@ var connection = new knx.Connection( {
           var responseString = JSON.stringify(value);
           var response = JSON.parse(responseString).data[0];
           var indice = dest.split("/")[2];
+          var state = dest.split('/')[1];
+
           if(response == 0 && dest=="1/0/"+indice){
             // console.log("reponse == 0")
             // console.log(typeof indice);
@@ -334,6 +333,18 @@ var connection = new knx.Connection( {
               default : break;
             }
           }
+
+          
+          
+            if(state == "1" && response == 0){
+                wss.clients.forEach(client => {
+                    client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On, ledIndice : ledIndice}))
+                })
+            
+            }else if(state == "1" && response == 1){
+            
+            }
+          
           
       },
       // get notified on connection errors
@@ -390,8 +401,9 @@ function handleChenillard(){
 function diminuerVitesse(){
     console.log("On a appuyé sur le bouton augmenter vitesse")
     if(chenille_On == true){ // prise en charge de la modification seulement si chenillard actif (choix personnel)
-        if(intChangingSpeed < 10){ 
-            intChangingSpeed += 1;
+        intChangingSpeed -= 1;
+        if(intChangingSpeed < 0){ 
+            intChangingSpeed = 0;
         } /*else if(intChangingSpeed < 20){
             intChangingSpeed += 1; // placer l'intervalle 95% entre 90% et 100% pour éviter un trop grand saut de vitesse
         } else;*/
@@ -410,8 +422,9 @@ function augmenterVitesse(){
         } else if(intChangingSpeed > 0){
             intChangingSpeed -= 2;
         } else;*/
-        if(intChangingSpeed > 0){
-            intChangingSpeed -= 1;
+        intChangingSpeed += 1;
+        if(intChangingSpeed > 8){
+            intChangingSpeed = 8;
         }
         //slider.value = 10*intChangingSpeed;
         //actualSpeed = 1100 - slider.value*10;

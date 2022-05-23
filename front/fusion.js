@@ -5,9 +5,9 @@ var startingChenille = true; // savoir si c'est le premier lancement du chenilla
 var ledIndice = 1; // variable qui servira à définir l'indice des LEDs à allumer
 var ledIndicePrevious = 0;
 
-var minSpeed = 100; // 50 ms - Au plus rapide, il s'écoulera un intervalle de 50 ms entre 2 étapes du chenillard
+var minSpeed = 300; // 50 ms - Au plus rapide, il s'écoulera un intervalle de 50 ms entre 2 étapes du chenillard
 var intervalSpeed = 100; // 100 ms // interval de temps entre les différentes vitesses
-var intChangingSpeed = 5; // allant de 0 à 10.
+var intChangingSpeed = 4; // allant de 0 à 8.
 //slider.value = intChangingSpeed*10;
 var actualSpeed = minSpeed + intChangingSpeed*100//slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
 
@@ -66,13 +66,16 @@ socket.addEventListener('message', (event) => {
     switch(message.action){
         case "recuperation des donnees":
             chenille_On = message.chenille_On;
-            ledIndice = message.ledIndice-1;
+            /*ledIndice = message.ledIndice-1;
             numMotif = message.numMotif;
             if(numMotif == 1){
                 ledIndicePrevious = message.ledIndicePrevious+1;
             } else {
                 ledIndicePrevious = message.ledIndicePrevious-1;
-            }
+            }*/
+            ledIndice = ledIndice;
+            ledIndicePrevious = ledIndicePrevious;
+            numMotif = numMotif;
             actualSpeed = message.actualSpeed;
             toLeft = message.toLeft;
             parity = message.parity;
@@ -82,13 +85,9 @@ socket.addEventListener('message', (event) => {
 
         case "handleChenillard()":    // Changer l'état de la LED
             chenille_On = message.chenille_On;
-            /*ledIndice = message.ledIndice-1;
-            if(numMotif == 1){
-                ledIndicePrevious = message.ledIndicePrevious+1;
-            } else {
-                ledIndicePrevious = message.ledIndicePrevious-1;
-            }*/
-            console.log("chenillard : "+chenille_On+ " ledIdince : "+ledIndice );
+            //ledIndice = message.ledIndice;
+            
+            // ledIndice = message.ledIndice-1;
             chenilleMOTIFS();
             break
 
@@ -124,7 +123,7 @@ socket.addEventListener('message', (event) => {
 }*/
 
 function actualizeSlider(){ // mettre à jour le front des slides bars
-    slider.value = (1100 - actualSpeed)/10
+    slider.value = (1100 - actualSpeed)/8
     SelectValue.innerHTML = slider.value;
     let position = 0.45 *slider.value +26   // fonction affine du slider pour afficher le curseur au bon endroit sur la barre en focntion de la vitesse du chenillard
     SelectBtn.style.left = position + "%"
@@ -132,32 +131,6 @@ function actualizeSlider(){ // mettre à jour le front des slides bars
     ProgressBar2.style.width = slider.value + "%";
 }
 
-/*function httpPost(route, body){
-    try{
-        var url = "http://localhost:3000/"+route;
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", url, true);
-            //xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            //xhr.send();
-            xhr.send(null);
-        }catch(e){
-            console.log(e)
-        }
-}*/
-/*function httpGet(route){
-    try{
-        var url = "http://localhost:3000/"+route;
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", url, true);
-            //xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            //xhr.send();
-            xhr.send(null);
-        }catch(e){
-            console.log(e)
-        }
-}*/
 
 btnChenillard.onclick = function(){
     oReq.open("GET", "/btnChenillard", true);
@@ -167,6 +140,7 @@ btnChenillard.onclick = function(){
 btnVitesseMoins.onclick = function(){
     oReq.open("GET", "/btnVitesseMoins", true);
     oReq.send();
+    
 }
 
 btnVitessePlus.onclick = function(){
@@ -257,51 +231,51 @@ function reset_leds(){ //remet toutes les LEDs en bleu
     tabLeds.forEach(elem_led => elem_led.src = "images/led-blue") //remet toutes les LEDs à l'état initial = bleu
 }
 
-function handleChenillard(){
-    if(chenille_On == true){ // le chenillard tourne : on veut l'arrêter et modifier la page en conséquence
-        btnChenillard.innerHTML = "Lancer chenillard"
-        chenille_On = false;
-    } else { // le chenillard ne tourne pas : on veut lancer le chenillard et modifier la page en conséquence
-        btnChenillard.innerHTML = "Arrêter chenillard"
-        chenille_On = true;
-        //chenille(); // lancement du chenillard simple
-        chenilleMOTIFS(); // lancement du chenillard avec choix du motif
-    }
-}
+// function handleChenillard(){
+//     if(chenille_On == true){ // le chenillard tourne : on veut l'arrêter et modifier la page en conséquence
+//         btnChenillard.innerHTML = "Lancer chenillard"
+//         chenille_On = false;
+//     } else { // le chenillard ne tourne pas : on veut lancer le chenillard et modifier la page en conséquence
+//         btnChenillard.innerHTML = "Arrêter chenillard"
+//         chenille_On = true;
+//         //chenille(); // lancement du chenillard simple
+//         chenilleMOTIFS(); // lancement du chenillard avec choix du motif
+//     }
+// }
 // btnChenillard.onclick = function(){
 //     handleChenillard();
 // }
 
-function augmenterVitesse(){
-    if(chenille_On == true){ // prise en charge de la modification seulement si chenillard actif (choix personnel)
-        if(intChangingSpeed < 10){ 
-            intChangingSpeed += 1;
-        } /*else if(intChangingSpeed < 20){
-            intChangingSpeed += 1; // placer l'intervalle 95% entre 90% et 100% pour éviter un trop grand saut de vitesse
-        } else;*/
-        slider.value = 10*intChangingSpeed;
-        actualSpeed = 1100 - slider.value*10;
-        actualizeSlider(); // mettre à jour le front
-    }
-}
+// function augmenterVitesse(){
+//     if(chenille_On == true){ // prise en charge de la modification seulement si chenillard actif (choix personnel)
+//         if(intChangingSpeed < 10){ 
+//             intChangingSpeed -= 1;
+//         } /*else if(intChangingSpeed < 20){
+//             intChangingSpeed += 1; // placer l'intervalle 95% entre 90% et 100% pour éviter un trop grand saut de vitesse
+//         } else;*/
+//         slider.value = 10*intChangingSpeed;
+//         actualSpeed = 1100 - slider.value*10;
+//         actualizeSlider(); // mettre à jour le front
+//     }
+// }
 // btnVitessePlus.onclick = function(){ // on augmente la vitesse du chenillard
 //     augmenterVitesse();
 // }
-function diminuerVitesse(){
-    if(chenille_On == true){ //modification seulement si chenillard actif (choix personnel)
-        /*if(intChangingSpeed > 18){
-            intChangingSpeed -= 1; // placer l'intervalle 95% entre 90% et 100% pour éviter un trop grand saut de vitesse
-        } else if(intChangingSpeed > 0){
-            intChangingSpeed -= 2;
-        } else;*/
-        if(intChangingSpeed > 0){
-            intChangingSpeed -= 1;
-        }
-        slider.value = 10*intChangingSpeed;
-        actualSpeed = 1100 - slider.value*10;
-        actualizeSlider(); // mettre à jour le front
-    }
-}
+// function diminuerVitesse(){
+//     if(chenille_On == true){ //modification seulement si chenillard actif (choix personnel)
+//         /*if(intChangingSpeed > 18){
+//             intChangingSpeed -= 1; // placer l'intervalle 95% entre 90% et 100% pour éviter un trop grand saut de vitesse
+//         } else if(intChangingSpeed > 0){
+//             intChangingSpeed -= 2;
+//         } else;*/
+//         if(intChangingSpeed > 0){
+//             intChangingSpeed += 1;
+//         }
+//         slider.value = 10*intChangingSpeed;
+//         actualSpeed = 1100 - slider.value*10;
+//         actualizeSlider(); // mettre à jour le front
+//     }
+// }
 // btnVitesseMoins.onclick = function(){ // on diminue la vitesse du chenillard
 //     diminuerVitesse();
 // }
@@ -363,29 +337,29 @@ function chenilleMOTIFS(){
             switch(decideMotif()){
                 case "chenillardSimple" : // Les LEDs s'allument une à une de gauche à droite
                     reset_leds();
-                    console.log("INDICE DE LED : "+ledIndice)
-                    tabLeds[ledIndice].src = "images/led-orange";
+                    tabLeds[ledIndice-1].src = "images/led-orange";
                     ledIndice += 1;
-                    if(ledIndice > 3){ // > tabLeds.length -1
-                        ledIndice = 0;
+                    if(ledIndice > 4){ // > tabLeds.length -1
+                        ledIndice = 1;
                     }
                     return chenilleMOTIFS();
 
                 case "chenillardInverse" : // Les LEDs s'allument une à une de droite à gauche (à partir de la led du motif précédent)
                     reset_leds();
-                    tabLeds[ledIndice].src = "images/led-orange";
+
+                    tabLeds[ledIndice-1].src = "images/led-orange";
                     ledIndice -= 1;
-                    if(ledIndice < 0){
-                        ledIndice = 3; // = tabLeds.length -1
+                    if(ledIndice < 1){
+                        ledIndice = 4; // = tabLeds.length -1
                     }
                     return chenilleMOTIFS();
                 
                 case "chenillardBackToBack" : // Les LEDs s'allument une à une de droite à gauche puis de gauche à droite (à partir de la led du motif précédent)
                     reset_leds();
-                    tabLeds[ledIndice].src = "images/led-orange"
-                    if(ledIndice <= 0){
+                    tabLeds[ledIndice-1].src = "images/led-orange"
+                    if(ledIndice <= 1){
                         toLeft = false;
-                    } else if (ledIndice >= 3){ // >= tabLeds.length -1
+                    } else if (ledIndice >= 4){ // >= tabLeds.length -1
                         toLeft = true;
                     }
                     if(toLeft == true){
@@ -455,12 +429,12 @@ function chenilleMOTIFS(){
                 //     return chenilleMOTIFS();
             
                 case "allumageAleatoire" : 
-                    ledIndice = Math.floor(Math.random() * 4); // numéro de LED aléatoire
+                    ledIndice = 1 + Math.floor(Math.random() * 4); // numéro de LED aléatoire
                     var rand = Math.floor(Math.random() * 2); // 1 chance sur 2 de s'allumer ou de s'éteindre
                     if(rand == 0){
-                        tabLeds[ledIndice].src = "images/led-orange";
+                        tabLeds[ledIndice-1].src = "images/led-orange";
                     } else {
-                        tabLeds[ledIndice].src = "images/led-blue";
+                        tabLeds[ledIndice-1].src = "images/led-blue";
                     }
                     return chenilleMOTIFS();
                 
