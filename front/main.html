@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chenillard Project</title>
+    <link rel="stylesheet" href="/main.css"></link>
+    
+    <script></script>
+</head>
+
+<body>
+    <div id="ProgressBar2"></div> 
+
+    <!-- Tous les éléments présents seront centrés sur la page -->
+    <div class="center_div">
+        <p style="margin-top: 10px;">Click on to change states !</p>
+
+        <!-- tableau de LEDs // 4 selon maquette KNX-->
+        <table> 
+            <tr>
+                <td><img id="led1" class="led" src="images/led-blue"></td>
+                <td><img id="led2" class="led" src="images/led-blue"></td>
+                <td><img id="led3" class="led" src="images/led-blue"></td>
+                <td><img id="led4" class="led" src="images/led-blue"></td>
+            </tr>
+        </table>
+
+        <!-- Slider lié à la vitesse du chenillard -->
+        <input type="range" min="0" max ="100" value="50" id="slider">
+
+        <div id="SelectBtn"></div>
+        <div id="SelectValue"></div>
+
+        <p id="p">Here is the speed !</p>
+
+        <!-- Boutons pour gérer le chenillard // 4 selons la maquette KNX -->
+        <table id="tab_motif">
+            <tr>
+                <td id="btnChenillard" class="motif">Lancer chenillard</td>
+                <td id="btnVitesseMoins" class="motif">Ralentir</td>
+                <td id="btnVitessePlus" class="motif">Accélérer</td>
+                <td id="btnMotifs" class="motif">Changer de motif</td>
+            </tr>
+        </table>
+    </div>   
+    <script src="main.js"></script> 
+</body>
+</html>

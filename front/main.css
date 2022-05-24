@@ -1,0 +1,143 @@
+body{
+    background-color: #1a1a1a;
+    color: #fff;
+    font-family: system-ui;
+    position: relative;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+.center-div{
+    margin : 0 auto;
+    width: max-content;
+    text-align: center;
+    position: relative;
+}
+
+table{
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin: 0 auto;
+}
+
+td{
+    text-align: center;
+}
+
+.led{
+    width: 75%;
+    cursor: pointer;
+}
+
+input[type=range]{
+    -webkit-appearance: none;
+    margin-top: 30px;
+    width: 45%;
+    height: 9px;
+    background-color: #ddd;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    background-image: url(images/btn-icon);
+    border: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    border: #fff;
+    /*box-shadow: #ffd200;*/
+}
+input[type=range]::-ms-track{
+    width: 60%;
+    cursor: pointer;
+}
+input[type=range]:focus{
+    outline: none;
+}
+input[type=range]:focus::-webkit-slider-runnable-track{
+    background: none;
+}
+input[type=range]::-ms-fill-lower{
+    background: rgb(178, 26, 26);
+}
+
+#SelectBtn{
+    background-image: url(images/btn-icon);
+    height: 20px;
+    width: 20px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    bottom: 20px;
+    margin-left: 7.3px;
+}
+
+#SelectValue{
+    width: 33px;
+    height: 28px;
+    position: relative;
+    top: 0;
+    background: #ffd200;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 0px;
+}
+
+#SelectValue::after{
+    content: '';
+    border-bottom: 17px solid #ffd200;
+    border-left: 17px solid #1a1a1a;
+    border-right: 16px solid #1a1a1a;
+    position: absolute;
+    top: -13px;
+    left:0;
+}
+
+#PowerOff{
+    height: 30px;
+    width: 30px;
+    background-image: url(images/poweroff);
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    margin: 0 auto;
+    z-index: 2;
+}
+
+#tab_motif{
+    width: 50%;
+    border-collapse: separate;
+    border-spacing: 60px;
+    position: relative;
+    margin-top: -40px;
+}
+
+.motif{
+    height: 100px;
+    width: 80px;
+    cursor: pointer;
+    background-color: rgb(40, 40, 103);
+    border-radius: 20%;
+    color: #ecfd29;
+    letter-spacing: 1px;
+}
+
+#ProgressBar2{
+    width: 100%;
+    height: 9px;
+    background-color: rgb(40, 40, 103);
+    top: 0;
+    left: 0;
+    border-radius: 5px;
+    position: sticky;
+}
