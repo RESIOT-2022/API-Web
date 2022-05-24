@@ -336,14 +336,14 @@ var connection = new knx.Connection( {
 
           
           
-            if(state == "1" && response == 0){
-                wss.clients.forEach(client => {
-                    client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On, ledIndice : ledIndice}))
-                })
+            // if(state == "1" && response == 0){
+            //     wss.clients.forEach(client => {
+            //         client.send(JSON.stringify({action: "handleChenillard()", chenille_On : chenille_On, ledIndice : ledIndice}))
+            //     })
             
-            }else if(state == "1" && response == 1){
+            // }else if(state == "1" && response == 1){
             
-            }
+            // }
           
           
       },
@@ -398,7 +398,7 @@ function handleChenillard(){
     }
 }
 
-function diminuerVitesse(){
+function augmenterVitesse(){
     console.log("On a appuyé sur le bouton augmenter vitesse")
     if(chenille_On == true){ // prise en charge de la modification seulement si chenillard actif (choix personnel)
         intChangingSpeed -= 1;
@@ -414,7 +414,7 @@ function diminuerVitesse(){
     }
 }
 
-function augmenterVitesse(){
+function diminuerVitesse(){
     console.log("On a appuyé sur le bouton diminuer vitesse")
     if(chenille_On == true){ //modification seulement si chenillard actif (choix personnel)
         /*if(intChangingSpeed > 18){
