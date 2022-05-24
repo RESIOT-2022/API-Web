@@ -26,10 +26,10 @@ var ledIndice = 1; // variable qui servira à définir l'indice des LEDs à allu
 var ledIndicePrevious = 0;
 
 var minSpeed = 300; // 300 ms - Au plus rapide, il s'écoulera un intervalle de 300 ms entre 2 étapes du chenillard
-var intervalSpeed = 100; // 100 ms // interval de temps entre les différentes vitesses
-var intChangingSpeed = 4; // allant de 0 à 8.
+var intervalSpeed = 80; // 80 ms // interval de temps entre les différentes vitesses
+var intChangingSpeed = 5; // allant de 0 à 10.
 //slider.value = intChangingSpeed*10;
-var actualSpeed = minSpeed + intChangingSpeed*100//slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
+var actualSpeed = minSpeed + intChangingSpeed*intervalSpeed//slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
 
 var numMotif = 0; // variable liée au choix du motif du chenillard
 
@@ -410,7 +410,7 @@ function diminuerVitesse(){
         //slider.value = 10*intChangingSpeed;
         //actualSpeed = 1100 - slider.value*10;
         //actualizeSlider(); // mettre à jour le front
-        actualSpeed = minSpeed + intChangingSpeed*100;
+        actualSpeed = minSpeed + intChangingSpeed*intervalSpeed;
     }
 }
 
@@ -423,13 +423,13 @@ function augmenterVitesse(){
             intChangingSpeed -= 2;
         } else;*/
         intChangingSpeed += 1;
-        if(intChangingSpeed > 8){
-            intChangingSpeed = 8;
+        if(intChangingSpeed > 10){
+            intChangingSpeed = 10;
         }
         //slider.value = 10*intChangingSpeed;
         //actualSpeed = 1100 - slider.value*10;
         //actualizeSlider(); // mettre à jour le front
-        actualSpeed = minSpeed + intChangingSpeed*100;
+        actualSpeed = minSpeed + intChangingSpeed*intervalSpeed;
     }
 }
 

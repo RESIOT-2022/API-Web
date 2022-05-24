@@ -6,10 +6,10 @@ var ledIndice = 1; // variable qui servira à définir l'indice des LEDs à allu
 var ledIndicePrevious = 0;
 
 var minSpeed = 300; // 50 ms - Au plus rapide, il s'écoulera un intervalle de 50 ms entre 2 étapes du chenillard
-var intervalSpeed = 100; // 100 ms // interval de temps entre les différentes vitesses
-var intChangingSpeed = 4; // allant de 0 à 8.
+var intervalSpeed = 80; // 80 ms // interval de temps entre les différentes vitesses
+var intChangingSpeed = 5; // allant de 0 à 10.
 //slider.value = intChangingSpeed*10;
-var actualSpeed = minSpeed + intChangingSpeed*100//slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
+var actualSpeed = minSpeed + intChangingSpeed*intervalSpeed//slider.value*10; // minSpeed + intChangingSpeed*intervalSpeed 550 ms - evolue entre 50 ms et 1 050 ms selon clicks (1 click +- 100 ms)
 
 var numMotif = 0; // variable liée au choix du motif du chenillard
 
@@ -331,7 +331,7 @@ function decideMotif(){
 
 // /* Fonction recursive responsable du chenillard et de tous ses modes */
 function chenilleMOTIFS(){
-    p.innerHTML = `indice de led : ${ledIndice} | indice precis : ${ledIndiceAtPreciseMoment} | regime stationnaire : ${regime_stationnaire}\n indice regime stat : ${ind_regime_stat} | nb for regime stat : ${nb_for_regime_stat}`;
+    //p.innerHTML = `indice de led : ${ledIndice} | indice precis : ${ledIndiceAtPreciseMoment} | regime stationnaire : ${regime_stationnaire}\n indice regime stat : ${ind_regime_stat} | nb for regime stat : ${nb_for_regime_stat}`;
     if(chenille_On == true){ // on vérifie que l'on veuille qu'il tourne (selon les clicks sur btnChenillard)
         sleep(actualSpeed).then(() => { //max speed = 50 ms / min speed = 1050 ms / fonction affine pour la vitesse
             switch(decideMotif()){
